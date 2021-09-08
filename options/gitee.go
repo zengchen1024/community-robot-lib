@@ -1,4 +1,4 @@
-package flagutil
+package options
 
 import (
 	"flag"
@@ -36,7 +36,7 @@ func (o *GiteeOptions) addFlags(defaultGiteeTokenPath string, fs *flag.FlagSet) 
 }
 
 // Validate validates Gitee options.
-func (o GiteeOptions) Validate(dryRun bool) error {
+func (o GiteeOptions) Validate() error {
 	if o.CacheRepoOnPV && o.RepoCacheDir == "" {
 		return fmt.Errorf("must set repo-cache-dir if caching repo on persistent volume")
 	}

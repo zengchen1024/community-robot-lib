@@ -1,4 +1,4 @@
-module github.com/opensourceways/robot-gitee-plugin
+module github.com/opensourceways/robot-gitee-plugin-lib
 
 go 1.16
 

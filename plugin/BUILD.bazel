@@ -10,10 +10,11 @@ go_library(
         "plugin.go",
         "util.go",
     ],
-    importpath = "github.com/opensourceways/robot-gitee-plugin/plugin",
+    importpath = "github.com/opensourceways/robot-gitee-plugin-lib/plugin",
     visibility = ["//visibility:public"],
     deps = [
         "//giteeclient:go_default_library",
+        "//options:go_default_library",
         "//plugin/interrupts:go_default_library",
         "@com_gitee_openeuler_go_gitee//gitee:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",

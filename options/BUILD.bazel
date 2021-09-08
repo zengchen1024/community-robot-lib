@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["gitee.go"],
-    importpath = "github.com/opensourceways/robot-gitee-plugin/options",
+    srcs = [
+        "gitee.go",
+        "plugin.go",
+    ],
+    importpath = "github.com/opensourceways/robot-gitee-plugin-lib/options",
     visibility = ["//visibility:public"],
 )

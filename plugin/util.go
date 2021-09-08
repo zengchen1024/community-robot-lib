@@ -5,7 +5,7 @@ import (
 
 	sdk "gitee.com/openeuler/go-gitee/gitee"
 
-	"github.com/opensourceways/robot-gitee-plugin/giteeclient"
+	"github.com/opensourceways/robot-gitee-plugin-lib/giteeclient"
 )
 
 func checkNoteEvent(e *sdk.NoteEvent) error {

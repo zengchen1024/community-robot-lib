@@ -7,7 +7,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/opensourceways/robot-gitee-plugin/plugin/interrupts"
+	"github.com/opensourceways/robot-gitee-plugin-lib/options"
+	"github.com/opensourceways/robot-gitee-plugin-lib/plugin/interrupts"
 )
 
 type HandlerRegitster interface {
@@ -23,9 +24,9 @@ type Plugin interface {
 	Exit()
 }
 
-func Run(p Plugin, o Options) {
+func Run(p Plugin, o options.PluginOptions) {
 	agent := newConfigAgent(p.NewPluginConfig)
-	if err := agent.Start(o.pluginConfig); err != nil {
+	if err := agent.Start(o.PluginConfig); err != nil {
 		return
 	}
 
@@ -45,9 +46,9 @@ func Run(p Plugin, o Options) {
 
 	http.Handle("/gitee-hook", d)
 
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.Port)}
 
-	interrupts.ListenAndServe(httpServer, o.gracePeriod)
+	interrupts.ListenAndServe(httpServer, o.GracePeriod)
 }
 
 func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
