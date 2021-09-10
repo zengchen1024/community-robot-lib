@@ -18,8 +18,9 @@ const (
 )
 
 type dispatcher struct {
-	h     *handlers
 	agent *config.ConfigAgent
+
+	h handlers
 
 	// Tracks running handlers for graceful shutdown
 	wg sync.WaitGroup

@@ -8,8 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/robot-gitee-plugin-lib/config"
+	"github.com/opensourceways/robot-gitee-plugin-lib/interrupts"
 	"github.com/opensourceways/robot-gitee-plugin-lib/options"
-	"github.com/opensourceways/robot-gitee-plugin-lib/plugin/interrupts"
 )
 
 type HandlerRegitster interface {
@@ -34,7 +34,7 @@ func Run(p Plugin, o options.PluginOptions) {
 	h := handlers{}
 	p.RegisterEventHandler(&h)
 
-	d := &dispatcher{agent: &agent, h: &h}
+	d := &dispatcher{agent: &agent, h: h}
 
 	defer interrupts.WaitForGracefulShutdown()
 
