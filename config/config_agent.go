@@ -81,17 +81,15 @@ func (ca *ConfigAgent) Start(path string) error {
 		return err
 	}
 
+	l := logrus.WithField("path", path)
+
 	ca.t.Start(
-		func() error {
-			return ca.load(path)
+		func() {
+			if err := ca.load(path); err != nil {
+				l.WithError(err).Error("loading config")
+			}
 		},
 		1*time.Minute,
-		logrus.WithFields(
-			logrus.Fields{
-				"work": "loading config",
-				"path": path,
-			},
-		),
 	)
 
 	return nil

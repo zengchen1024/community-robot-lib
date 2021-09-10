@@ -1,10 +1,6 @@
 package utils
 
-import (
-	"time"
-
-	"github.com/sirupsen/logrus"
-)
+import "time"
 
 type Timer struct {
 	stop chan bool
@@ -12,16 +8,14 @@ type Timer struct {
 
 // Start starts work. If the first attempt fails, then returns the error.
 // It will trigger the work by the interval until recieving a stop signal.
-func (t Timer) Start(f func() error, interval time.Duration, l *logrus.Entry) {
+func (t Timer) Start(f func(), interval time.Duration) {
 	ticker := time.Tick(interval)
 	go func() {
 		for {
 			//TODO is it right
 			select {
 			case <-ticker:
-				if err := f(); err != nil {
-					l.WithError(err).Error()
-				}
+				f()
 			case <-t.stop:
 				break
 			}
