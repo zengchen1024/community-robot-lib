@@ -9,6 +9,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
+
+	"github.com/opensourceways/robot-gitee-plugin-lib/utils"
 )
 
 type PluginConfig interface {
@@ -24,8 +26,8 @@ type ConfigAgent struct {
 	mut    sync.RWMutex
 	c      PluginConfig
 	b      NewPluginConfig
-	stop   chan bool
 	md5Sum string
+	t      utils.Timer
 }
 
 func NewConfigAgent(b NewPluginConfig) ConfigAgent {
@@ -72,33 +74,29 @@ func (ca *ConfigAgent) GetConfig() (string, PluginConfig) {
 	return v, c
 }
 
-// Start starts polling path for plugin config. If the first attempt fails,
-// then start returns the error. Future errors will halt updates but not stop.
+// Start starts polling path for plugin config.
+// If the first attempt fails, then start returns the error.
 func (ca *ConfigAgent) Start(path string) error {
 	if err := ca.load(path); err != nil {
 		return err
 	}
 
-	l := logrus.WithField("path", path)
-
-	ticker := time.Tick(1 * time.Minute)
-	go func() {
-		for {
-			//TODO is it right
-			select {
-			case <-ticker:
-				if err := ca.load(path); err != nil {
-					l.WithError(err).Error("Error loading plugin config.")
-				}
-			case <-ca.stop:
-				break
-			}
-		}
-	}()
+	ca.t.Start(
+		func() error {
+			return ca.load(path)
+		},
+		1*time.Minute,
+		logrus.WithFields(
+			logrus.Fields{
+				"work": "loading config",
+				"path": path,
+			},
+		),
+	)
 
 	return nil
 }
 
 func (ca *ConfigAgent) Stop() {
-	ca.stop <- true
+	ca.t.Stop()
 }
