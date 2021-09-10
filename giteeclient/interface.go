@@ -10,22 +10,22 @@ type Client interface {
 
 	ListCollaborators(org, repo string) ([]sdk.ProjectMember, error)
 	GetRef(org, repo, ref string) (string, error)
-	GetPullRequestChanges(org, repo string, number int) ([]sdk.PullRequestFiles, error)
-	GetPRLabels(org, repo string, number int) ([]sdk.Label, error)
-	ListPRComments(org, repo string, number int) ([]sdk.PullRequestComments, error)
+	GetPullRequestChanges(org, repo string, number int32) ([]sdk.PullRequestFiles, error)
+	GetPRLabels(org, repo string, number int32) ([]sdk.Label, error)
+	ListPRComments(org, repo string, number int32) ([]sdk.PullRequestComments, error)
 	ListPrIssues(org, repo string, number int32) ([]sdk.Issue, error)
-	DeletePRComment(org, repo string, ID int) error
-	CreatePRComment(org, repo string, number int, comment string) error
-	UpdatePRComment(org, repo string, commentID int, comment string) error
-	AddPRLabel(org, repo string, number int, label string) error
-	AddMultiPRLabel(org, repo string, number int, label []string) error
-	RemovePRLabel(org, repo string, number int, label string) error
-	RemovePRLabels(org, repo string, number int, labels []string) error
+	DeletePRComment(org, repo string, ID int32) error
+	CreatePRComment(org, repo string, number int32, comment string) error
+	UpdatePRComment(org, repo string, commentID int32, comment string) error
+	AddPRLabel(org, repo string, number int32, label string) error
+	AddMultiPRLabel(org, repo string, number int32, label []string) error
+	RemovePRLabel(org, repo string, number int32, label string) error
+	RemovePRLabels(org, repo string, number int32, labels []string) error
 
-	ClosePR(org, repo string, number int) error
-	AssignPR(owner, repo string, number int, logins []string) error
-	UnassignPR(owner, repo string, number int, logins []string) error
-	GetPRCommits(org, repo string, number int) ([]sdk.PullRequestCommits, error)
+	ClosePR(org, repo string, number int32) error
+	AssignPR(owner, repo string, number int32, logins []string) error
+	UnassignPR(owner, repo string, number int32, logins []string) error
+	GetPRCommits(org, repo string, number int32) ([]sdk.PullRequestCommits, error)
 
 	AssignGiteeIssue(org, repo string, number string, login string) error
 	UnassignGiteeIssue(org, repo string, number string, login string) error
@@ -33,9 +33,9 @@ type Client interface {
 
 	IsCollaborator(owner, repo, login string) (bool, error)
 	IsMember(org, login string) (bool, error)
-	GetGiteePullRequest(org, repo string, number int) (sdk.PullRequest, error)
+	GetGiteePullRequest(org, repo string, number int32) (sdk.PullRequest, error)
 	GetPRCommit(org, repo, SHA string) (sdk.RepoCommit, error)
-	MergePR(owner, repo string, number int, opt sdk.PullRequestMergePutParam) error
+	MergePR(owner, repo string, number int32, opt sdk.PullRequestMergePutParam) error
 
 	GetRepos(org string) ([]sdk.Project, error)
 	GetGiteeRepo(org, repo string) (sdk.Project, error)
@@ -45,14 +45,14 @@ type Client interface {
 	AddIssueLabel(org, repo, number, label string) error
 	AddMultiIssueLabel(org, repo, number string, label []string) error
 
-	ReplacePRAllLabels(owner, repo string, number int, labels []string) error
+	ReplacePRAllLabels(owner, repo string, number int32, labels []string) error
 	CloseIssue(owner, repo string, number string) error
 	ReopenIssue(owner, repo string, number string) error
 	UpdateIssue(owner, number string, param sdk.IssueUpdateParam) (sdk.Issue, error)
 	GetIssueLabels(org, repo, number string) ([]sdk.Label, error)
 	GetIssue(org, repo, number string) (sdk.Issue, error)
 
-	ListPROperationLogs(org, repo string, number int) ([]sdk.OperateLog, error)
+	ListPROperationLogs(org, repo string, number int32) ([]sdk.OperateLog, error)
 }
 
 type ListPullRequestOpt struct {
@@ -61,6 +61,6 @@ type ListPullRequestOpt struct {
 	Base            string
 	Sort            string
 	Direction       string
-	MilestoneNumber int
+	MilestoneNumber int32
 	Labels          []string
 }

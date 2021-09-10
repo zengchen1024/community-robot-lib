@@ -60,7 +60,7 @@ func (c *client) GetPullRequests(org, repo string, opts ListPullRequestOpt) ([]s
 	setStr(&opt.Sort, opts.Sort)
 	setStr(&opt.Direction, opts.Direction)
 	if opts.MilestoneNumber > 0 {
-		opt.MilestoneNumber = optional.NewInt32(int32(opts.MilestoneNumber))
+		opt.MilestoneNumber = optional.NewInt32(opts.MilestoneNumber)
 	}
 	if opts.Labels != nil && len(opts.Labels) > 0 {
 		opt.Labels = optional.NewString(strings.Join(opts.Labels, ","))
@@ -91,9 +91,9 @@ func (c *client) UpdatePullRequest(org, repo string, number int32, param sdk.Pul
 	return pr, formatErr(err, "update pull request")
 }
 
-func (c *client) GetGiteePullRequest(org, repo string, number int) (sdk.PullRequest, error) {
+func (c *client) GetGiteePullRequest(org, repo string, number int32) (sdk.PullRequest, error) {
 	pr, _, err := c.ac.PullRequestsApi.GetV5ReposOwnerRepoPullsNumber(
-		context.Background(), org, repo, int32(number), nil)
+		context.Background(), org, repo, number, nil)
 	return pr, formatErr(err, "get pull request")
 }
 
@@ -136,9 +136,9 @@ func (c *client) GetRef(org, repo, ref string) (string, error) {
 	return b.Commit.Sha, nil
 }
 
-func (c *client) GetPullRequestChanges(org, repo string, number int) ([]sdk.PullRequestFiles, error) {
+func (c *client) GetPullRequestChanges(org, repo string, number int32) ([]sdk.PullRequestFiles, error) {
 	fs, _, err := c.ac.PullRequestsApi.GetV5ReposOwnerRepoPullsNumberFiles(
-		context.Background(), org, repo, int32(number), nil)
+		context.Background(), org, repo, number, nil)
 	if err != nil {
 		return nil, formatErr(err, "list files of pr")
 	}
@@ -146,7 +146,7 @@ func (c *client) GetPullRequestChanges(org, repo string, number int) ([]sdk.Pull
 	return fs, nil
 }
 
-func (c *client) GetPRLabels(org, repo string, number int) ([]sdk.Label, error) {
+func (c *client) GetPRLabels(org, repo string, number int32) ([]sdk.Label, error) {
 	var r []sdk.Label
 
 	p := int32(1)
@@ -154,7 +154,7 @@ func (c *client) GetPRLabels(org, repo string, number int) ([]sdk.Label, error) 
 	for {
 		opt.Page = optional.NewInt32(p)
 		ls, _, err := c.ac.PullRequestsApi.GetV5ReposOwnerRepoPullsNumberLabels(
-			context.Background(), org, repo, int32(number), &opt)
+			context.Background(), org, repo, number, &opt)
 		if err != nil {
 			return nil, formatErr(err, "list labels of pr")
 		}
@@ -170,7 +170,7 @@ func (c *client) GetPRLabels(org, repo string, number int) ([]sdk.Label, error) 
 	return r, nil
 }
 
-func (c *client) ListPRComments(org, repo string, number int) ([]sdk.PullRequestComments, error) {
+func (c *client) ListPRComments(org, repo string, number int32) ([]sdk.PullRequestComments, error) {
 	var r []sdk.PullRequestComments
 
 	p := int32(1)
@@ -178,7 +178,7 @@ func (c *client) ListPRComments(org, repo string, number int) ([]sdk.PullRequest
 	for {
 		opt.Page = optional.NewInt32(p)
 		cs, _, err := c.ac.PullRequestsApi.GetV5ReposOwnerRepoPullsNumberComments(
-			context.Background(), org, repo, int32(number), &opt)
+			context.Background(), org, repo, number, &opt)
 		if err != nil {
 			return nil, formatErr(err, "list comments of pr")
 		}
@@ -194,13 +194,12 @@ func (c *client) ListPRComments(org, repo string, number int) ([]sdk.PullRequest
 	return r, nil
 }
 
-func (c *client) ListPROperationLogs(org, repo string, number int) ([]sdk.OperateLog, error) {
+func (c *client) ListPROperationLogs(org, repo string, number int32) ([]sdk.OperateLog, error) {
 	v, _, err := c.ac.PullRequestsApi.GetV5ReposOwnerRepoPullsNumberOperateLogs(
-		context.Background(), org, repo, int32(number), nil)
+		context.Background(), org, repo, number, nil)
 	if err != nil {
 		return nil, formatErr(err, "list operation logs of pr")
 	}
-
 	return v, nil
 }
 
@@ -223,43 +222,43 @@ func (c *client) ListPrIssues(org, repo string, number int32) ([]sdk.Issue, erro
 	return issues, nil
 }
 
-func (c *client) DeletePRComment(org, repo string, ID int) error {
+func (c *client) DeletePRComment(org, repo string, ID int32) error {
 	_, err := c.ac.PullRequestsApi.DeleteV5ReposOwnerRepoPullsCommentsId(
-		context.Background(), org, repo, int32(ID), nil)
+		context.Background(), org, repo, ID, nil)
 	return formatErr(err, "delete comment of pr")
 }
 
-func (c *client) CreatePRComment(org, repo string, number int, comment string) error {
+func (c *client) CreatePRComment(org, repo string, number int32, comment string) error {
 	opt := sdk.PullRequestCommentPostParam{Body: comment}
 	_, _, err := c.ac.PullRequestsApi.PostV5ReposOwnerRepoPullsNumberComments(
-		context.Background(), org, repo, int32(number), opt)
+		context.Background(), org, repo, number, opt)
 	return formatErr(err, "create comment of pr")
 }
 
-func (c *client) UpdatePRComment(org, repo string, commentID int, comment string) error {
+func (c *client) UpdatePRComment(org, repo string, commentID int32, comment string) error {
 	opt := sdk.PullRequestCommentPatchParam{Body: comment}
 	_, _, err := c.ac.PullRequestsApi.PatchV5ReposOwnerRepoPullsCommentsId(
-		context.Background(), org, repo, int32(commentID), opt)
+		context.Background(), org, repo, commentID, opt)
 	return formatErr(err, "update comment of pr")
 }
 
-func (c *client) AddPRLabel(org, repo string, number int, label string) error {
+func (c *client) AddPRLabel(org, repo string, number int32, label string) error {
 	return c.AddMultiPRLabel(org, repo, number, []string{label})
 }
 
-func (c *client) AddMultiPRLabel(org, repo string, number int, label []string) error {
+func (c *client) AddMultiPRLabel(org, repo string, number int32, label []string) error {
 	opt := sdk.PullRequestLabelPostParam{Body: label}
 	_, _, err := c.ac.PullRequestsApi.PostV5ReposOwnerRepoPullsNumberLabels(
-		context.Background(), org, repo, int32(number), opt)
+		context.Background(), org, repo, number, opt)
 	return formatErr(err, "add multi label for pr")
 }
 
-func (c *client) RemovePRLabel(org, repo string, number int, label string) error {
+func (c *client) RemovePRLabel(org, repo string, number int32, label string) error {
 	// gitee's bug, it can't deal with the label which includes '/'
 	label = strings.Replace(label, "/", "%2F", -1)
 
 	v, err := c.ac.PullRequestsApi.DeleteV5ReposOwnerRepoPullsLabel(
-		context.Background(), org, repo, int32(number), label, nil)
+		context.Background(), org, repo, number, label, nil)
 
 	if v != nil && v.StatusCode == 404 {
 		return nil
@@ -267,32 +266,32 @@ func (c *client) RemovePRLabel(org, repo string, number int, label string) error
 	return formatErr(err, "remove label of pr")
 }
 
-func (c *client) RemovePRLabels(org, repo string, number int, labels []string) error {
+func (c *client) RemovePRLabels(org, repo string, number int32, labels []string) error {
 	return c.RemovePRLabel(org, repo, number, strings.Join(labels, ","))
 }
 
-func (c *client) ClosePR(org, repo string, number int) error {
+func (c *client) ClosePR(org, repo string, number int32) error {
 	opt := sdk.PullRequestUpdateParam{State: StatusClosed}
-	_, err := c.UpdatePullRequest(org, repo, int32(number), opt)
+	_, err := c.UpdatePullRequest(org, repo, number, opt)
 	return formatErr(err, "close pr")
 }
 
-func (c *client) AssignPR(org, repo string, number int, logins []string) error {
+func (c *client) AssignPR(org, repo string, number int32, logins []string) error {
 	opt := sdk.PullRequestAssigneePostParam{Assignees: strings.Join(logins, ",")}
 	_, _, err := c.ac.PullRequestsApi.PostV5ReposOwnerRepoPullsNumberAssignees(
-		context.Background(), org, repo, int32(number), opt)
+		context.Background(), org, repo, number, opt)
 	return formatErr(err, "assign reviewer to pr")
 }
 
-func (c *client) UnassignPR(org, repo string, number int, logins []string) error {
+func (c *client) UnassignPR(org, repo string, number int32, logins []string) error {
 	_, _, err := c.ac.PullRequestsApi.DeleteV5ReposOwnerRepoPullsNumberAssignees(
-		context.Background(), org, repo, int32(number), strings.Join(logins, ","), nil)
+		context.Background(), org, repo, number, strings.Join(logins, ","), nil)
 	return formatErr(err, "unassign reviewer from pr")
 }
 
-func (c *client) GetPRCommits(org, repo string, number int) ([]sdk.PullRequestCommits, error) {
+func (c *client) GetPRCommits(org, repo string, number int32) ([]sdk.PullRequestCommits, error) {
 	commits, _, err := c.ac.PullRequestsApi.GetV5ReposOwnerRepoPullsNumberCommits(
-		context.Background(), org, repo, int32(number), nil)
+		context.Background(), org, repo, number, nil)
 	return commits, formatErr(err, "get pr commits")
 }
 
@@ -354,9 +353,9 @@ func (c *client) GetPRCommit(org, repo, SHA string) (sdk.RepoCommit, error) {
 	return v, nil
 }
 
-func (c *client) MergePR(owner, repo string, number int, opt sdk.PullRequestMergePutParam) error {
+func (c *client) MergePR(owner, repo string, number int32, opt sdk.PullRequestMergePutParam) error {
 	_, err := c.ac.PullRequestsApi.PutV5ReposOwnerRepoPullsNumberMerge(
-		context.Background(), owner, repo, int32(number), opt)
+		context.Background(), owner, repo, number, opt)
 	return formatErr(err, "merge pr")
 }
 
@@ -412,9 +411,9 @@ func (c *client) RemoveIssueLabel(org, repo, number, label string) error {
 	return formatErr(err, "rm issue label")
 }
 
-func (c *client) ReplacePRAllLabels(owner, repo string, number int, labels []string) error {
+func (c *client) ReplacePRAllLabels(owner, repo string, number int32, labels []string) error {
 	opt := sdk.PullRequestLabelPostParam{Body: labels}
-	_, _, err := c.ac.PullRequestsApi.PutV5ReposOwnerRepoPullsNumberLabels(context.Background(), owner, repo, int32(number), opt)
+	_, _, err := c.ac.PullRequestsApi.PutV5ReposOwnerRepoPullsNumberLabels(context.Background(), owner, repo, number, opt)
 	return formatErr(err, "replace pr labels")
 }
 
