@@ -32,7 +32,7 @@ func (ne NoteEventWrapper) GetComment() string {
 
 //GetOrgRepo Return to the org and repo
 func (ne NoteEventWrapper) GetOrgRep() (string, string) {
-	return GetOrgRepo(ne.Repository)
+	return getOrgRepo(ne.Repository)
 }
 
 //IsPullRequest Determine whether it is a PullRequest

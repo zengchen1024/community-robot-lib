@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
+        "converter.go",
         "error.go",
         "interface.go",
         "note_event.go",

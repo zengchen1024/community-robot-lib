@@ -1,12 +1,10 @@
-package plugin
+package giteeclient
 
 import (
 	"encoding/json"
 	"fmt"
 
 	sdk "gitee.com/openeuler/go-gitee/gitee"
-
-	"github.com/opensourceways/robot-gitee-plugin-lib/giteeclient"
 )
 
 func ConvertToNoteEvent(payload []byte) (e sdk.NoteEvent, err error) {
@@ -19,9 +17,9 @@ func ConvertToNoteEvent(payload []byte) (e sdk.NoteEvent, err error) {
 }
 
 func checkNoteEvent(e *sdk.NoteEvent) error {
-	eventType := giteeclient.EventTypeNote
+	eventType := EventTypeNote
 
-	ne := giteeclient.NewNoteEventWrapper(e)
+	ne := NewNoteEventWrapper(e)
 
 	if ne.Comment == nil {
 		return fmtCheckError(eventType, "Comment")
@@ -51,7 +49,7 @@ func ConvertToIssueEvent(payload []byte) (e sdk.IssueEvent, err error) {
 }
 
 func checkIssueEvent(e *sdk.IssueEvent) error {
-	eventType := giteeclient.EventTypeIssue
+	eventType := EventTypeIssue
 
 	if e.Issue == nil {
 		return fmtCheckError(eventType, "Issue")
@@ -70,7 +68,7 @@ func ConvertToPREvent(payload []byte) (e sdk.PullRequestEvent, err error) {
 }
 
 func checkPullRequestEvent(e *sdk.PullRequestEvent) error {
-	eventType := giteeclient.EventTypePR
+	eventType := EventTypePR
 
 	if err := checkPullRequestHook(e.PullRequest, eventType, "PullRequest"); err != nil {
 		return err
@@ -97,7 +95,7 @@ func checkRepository(rep *sdk.ProjectHook, eventType string) error {
 		return fmtCheckError(eventType, field)
 	}
 
-	org, repo := giteeclient.GetOrgRepo(rep)
+	org, repo := getOrgRepo(rep)
 	if org == "" || repo == "" {
 		return fmtCheckError(eventType, field+" .org or .repo")
 	}
@@ -109,7 +107,7 @@ func ConvertToPushEvent(payload []byte) (e sdk.PushEvent, err error) {
 		return
 	}
 
-	err = checkRepository(e.Repository, giteeclient.EventTypePush)
+	err = checkRepository(e.Repository, EventTypePush)
 	return
 }
 

@@ -36,7 +36,7 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 			return nil
 		}
 
-		e, err := ConvertToNoteEvent(payload)
+		e, err := giteeclient.ConvertToNoteEvent(payload)
 		if err != nil {
 			return err
 		}
@@ -49,7 +49,7 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 			return nil
 		}
 
-		e, err := ConvertToIssueEvent(payload)
+		e, err := giteeclient.ConvertToIssueEvent(payload)
 		if err != nil {
 			return err
 		}
@@ -62,7 +62,7 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 			return nil
 		}
 
-		e, err := ConvertToPREvent(payload)
+		e, err := giteeclient.ConvertToPREvent(payload)
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 			return nil
 		}
 
-		e, err := ConvertToPushEvent(payload)
+		e, err := giteeclient.ConvertToPushEvent(payload)
 		if err != nil {
 			return err
 		}

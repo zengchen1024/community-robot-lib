@@ -46,20 +46,20 @@ func getLabelFromEvent(labels []sdk.LabelHook) sets.String {
 
 // GetOwnerAndRepoByPushEvent obtain the owner and repository name from the push event
 func GetOwnerAndRepoByPushEvent(pre *sdk.PushEvent) (string, string) {
-	return GetOrgRepo(pre.Repository)
+	return getOrgRepo(pre.Repository)
 }
 
 // GetOwnerAndRepoByPREvent obtain the owner and repository name from the pullrequest event
 func GetOwnerAndRepoByPREvent(pre *sdk.PullRequestEvent) (string, string) {
-	return GetOrgRepo(pre.Repository)
+	return getOrgRepo(pre.Repository)
 }
 
 // GetOwnerAndRepoByIssueEvent obtain the owner and repository name from the issue event
 func GetOwnerAndRepoByIssueEvent(issue *sdk.IssueEvent) (string, string) {
-	return GetOrgRepo(issue.Repository)
+	return getOrgRepo(issue.Repository)
 }
 
-func GetOrgRepo(h *sdk.ProjectHook) (string, string) {
+func getOrgRepo(h *sdk.ProjectHook) (string, string) {
 	if h == nil {
 		return "", ""
 	}

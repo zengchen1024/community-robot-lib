@@ -6,7 +6,6 @@ go_library(
         "dispatcher.go",
         "handlers.go",
         "plugin.go",
-        "util.go",
     ],
     importpath = "github.com/opensourceways/robot-gitee-plugin-lib/plugin",
     visibility = ["//visibility:public"],
