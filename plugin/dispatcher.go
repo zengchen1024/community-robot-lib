@@ -1,22 +1,25 @@
 package plugin
 
 import (
-	"encoding/json"
 	"sync"
 
-	"gitee.com/openeuler/go-gitee/gitee"
+	sdk "gitee.com/openeuler/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
+
+	"github.com/opensourceways/robot-gitee-plugin-lib/config"
+	"github.com/opensourceways/robot-gitee-plugin-lib/giteeclient"
 )
 
 const (
-	logFieldPR   = "pr"
-	logFieldOrg  = "org"
-	logFieldRepo = "repo"
+	logFieldOrg    = "org"
+	logFieldRepo   = "repo"
+	logFieldURL    = "url"
+	logFieldAction = "action"
 )
 
 type dispatcher struct {
-	c *ConfigAgent
-	h *handlers
+	h     *handlers
+	agent *config.ConfigAgent
 
 	// Tracks running handlers for graceful shutdown
 	wg sync.WaitGroup
@@ -28,144 +31,130 @@ func (d *dispatcher) Wait() {
 
 func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry) error {
 	switch eventType {
-	case "Note Hook":
+	case giteeclient.EventTypeNote:
 		if d.h.noteEventHandler == nil {
 			return nil
 		}
 
-		var e gitee.NoteEvent
-		if err := json.Unmarshal(payload, &e); err != nil {
+		e, err := ConvertToNoteEvent(payload)
+		if err != nil {
 			return err
 		}
-		if err := checkNoteEvent(&e); err != nil {
-			return err
-		}
+
 		d.wg.Add(1)
 		go d.handleNoteEvent(&e, l)
 
-	case "Issue Hook":
+	case giteeclient.EventTypeIssue:
 		if d.h.issueHandlers == nil {
 			return nil
 		}
 
-		var ie gitee.IssueEvent
-		if err := json.Unmarshal(payload, &ie); err != nil {
+		e, err := ConvertToIssueEvent(payload)
+		if err != nil {
 			return err
 		}
-		if err := checkIssueEvent(&ie); err != nil {
-			return err
-		}
-		d.wg.Add(1)
-		go d.handleIssueEvent(&ie, l)
 
-	case "Merge Request Hook":
+		d.wg.Add(1)
+		go d.handleIssueEvent(&e, l)
+
+	case giteeclient.EventTypePR:
 		if d.h.pullRequestHandler == nil {
 			return nil
 		}
 
-		var pr gitee.PullRequestEvent
-		if err := json.Unmarshal(payload, &pr); err != nil {
+		e, err := ConvertToPREvent(payload)
+		if err != nil {
 			return err
 		}
-		if err := checkPullRequestEvent(&pr); err != nil {
-			return err
-		}
-		d.wg.Add(1)
-		go d.handlePullRequestEvent(&pr, l)
 
-	case "Push Hook":
+		d.wg.Add(1)
+		go d.handlePullRequestEvent(&e, l)
+
+	case giteeclient.EventTypePush:
 		if d.h.pushEventHandler == nil {
 			return nil
 		}
 
-		var pe gitee.PushEvent
-		if err := json.Unmarshal(payload, &pe); err != nil {
+		e, err := ConvertToPushEvent(payload)
+		if err != nil {
 			return err
 		}
-		if err := checkRepository(pe.Repository, "push event"); err != nil {
-			return err
-		}
+
 		d.wg.Add(1)
-		go d.handlePushEvent(&pe, l)
+		go d.handlePushEvent(&e, l)
 
 	default:
-		l.Debug("Ignoring unhandled event type")
+		l.Debug("Ignoring unknown event type")
 	}
 	return nil
 }
 
-func (d *dispatcher) handlePullRequestEvent(pr *gitee.PullRequestEvent, l *logrus.Entry) {
+func (d dispatcher) getConfig() config.PluginConfig {
+	_, c := d.agent.GetConfig()
+	return c
+}
+
+func (d *dispatcher) handlePullRequestEvent(e *sdk.PullRequestEvent, l *logrus.Entry) {
 	defer d.wg.Done()
 
 	l = l.WithFields(logrus.Fields{
-		logFieldOrg:  pr.Repository.Namespace,
-		logFieldRepo: pr.Repository.Path,
-		logFieldPR:   pr.PullRequest.Number,
-		"author":     pr.PullRequest.User.Login,
-		"url":        pr.PullRequest.HtmlUrl,
+		logFieldURL:    e.PullRequest.HtmlUrl,
+		logFieldAction: *e.Action,
 	})
-	l.Infof("Pull request %s.", *pr.Action)
 
-	if err := d.h.pullRequestHandler(pr, d.c.GetConfig(), l); err != nil {
-		l.WithError(err).Error("Error handling PullRequestEvent.")
+	if err := d.h.pullRequestHandler(e, d.getConfig(), l); err != nil {
+		l.WithError(err).Error()
+	} else {
+		l.Info()
 	}
 }
 
-func (d *dispatcher) handleIssueEvent(i *gitee.IssueEvent, l *logrus.Entry) {
+func (d *dispatcher) handleIssueEvent(e *sdk.IssueEvent, l *logrus.Entry) {
 	defer d.wg.Done()
 
 	l = l.WithFields(logrus.Fields{
-		logFieldOrg:  i.Repository.Namespace,
-		logFieldRepo: i.Repository.Path,
-		logFieldPR:   i.Issue.Number,
-		"author":     i.Issue.User.Login,
-		"url":        i.Issue.HtmlUrl,
+		logFieldURL:    e.Issue.HtmlUrl,
+		logFieldAction: *e.Action,
 	})
-	l.Infof("Issue %s.", *i.Action)
 
-	if err := d.h.issueHandlers(i, d.c.GetConfig(), l); err != nil {
-		l.WithError(err).Error("Error handling IssueEvent.")
+	if err := d.h.issueHandlers(e, d.getConfig(), l); err != nil {
+		l.WithError(err).Error()
+	} else {
+		l.Info()
 	}
 }
 
-func (d *dispatcher) handlePushEvent(pe *gitee.PushEvent, l *logrus.Entry) {
+func (d *dispatcher) handlePushEvent(e *sdk.PushEvent, l *logrus.Entry) {
 	defer d.wg.Done()
 
-	l = l.WithFields(logrus.Fields{
-		logFieldOrg:  pe.Repository.Namespace,
-		logFieldRepo: pe.Repository.Path,
-		"ref":        pe.Ref,
-		"head":       pe.After,
-	})
-	l.Info("Push event.")
+	org, repo := giteeclient.GetOwnerAndRepoByPushEvent(e)
 
-	if err := d.h.pushEventHandler(pe, d.c.GetConfig(), l); err != nil {
-		l.WithError(err).Error("Error handling PushEvent.")
+	l = l.WithFields(logrus.Fields{
+		logFieldOrg:  org,
+		logFieldRepo: repo,
+		"ref":        e.Ref,
+		"head":       e.After,
+	})
+
+	if err := d.h.pushEventHandler(e, d.getConfig(), l); err != nil {
+		l.WithError(err).Error()
+	} else {
+		l.Info()
 	}
 }
 
-func (d *dispatcher) handleNoteEvent(e *gitee.NoteEvent, l *logrus.Entry) {
+func (d *dispatcher) handleNoteEvent(e *sdk.NoteEvent, l *logrus.Entry) {
 	defer d.wg.Done()
 
-	var n interface{}
-	switch *(e.NoteableType) {
-	case "PullRequest":
-		n = e.PullRequest.Number
-	case "Issue":
-		n = e.Issue.Number
-	}
-
 	l = l.WithFields(logrus.Fields{
-		logFieldOrg:  e.Repository.Namespace,
-		logFieldRepo: e.Repository.Path,
-		logFieldPR:   n,
-		"review":     e.Comment.Id,
-		"commenter":  e.Comment.User.Login,
-		"url":        e.Comment.HtmlUrl,
+		"commenter":    e.Comment.User.Login,
+		logFieldURL:    e.Comment.HtmlUrl,
+		logFieldAction: *e.Action,
 	})
-	l.Infof("Note %s.", *e.Action)
 
-	if err := d.h.noteEventHandler(e, d.c.GetConfig(), l); err != nil {
-		l.WithError(err).Error("Error handling NoteEvent.")
+	if err := d.h.noteEventHandler(e, d.getConfig(), l); err != nil {
+		l.WithError(err).Error()
+	} else {
+		l.Info()
 	}
 }

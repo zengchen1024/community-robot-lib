@@ -32,7 +32,7 @@ func (ne NoteEventWrapper) GetComment() string {
 
 //GetOrgRepo Return to the org and repo
 func (ne NoteEventWrapper) GetOrgRep() (string, string) {
-	return ne.Repository.Namespace, ne.Repository.Path
+	return GetOrgRepo(ne.Repository)
 }
 
 //IsPullRequest Determine whether it is a PullRequest
@@ -78,8 +78,8 @@ type PRNoteEvent struct {
 }
 
 //GetPRNumber Return to the number of the PR
-func (ne PRNoteEvent) GetPRNumber() int {
-	return int(ne.PullRequest.Number)
+func (ne PRNoteEvent) GetPRNumber() int32 {
+	return ne.PullRequest.Number
 }
 
 //GetPRAuthor Return to the author of the PR

@@ -48,11 +48,11 @@ func Init(formatter *DefaultFieldsFormatter) {
 }
 
 // ComponentInit is a syntax sugar for easier Init
-func ComponentInit() {
+func ComponentInit(pluginName string) {
 	Init(
 		&DefaultFieldsFormatter{
 			PrintLineNumber: true,
-			DefaultFields:   logrus.Fields{"component": "robot-gitee"},
+			DefaultFields:   logrus.Fields{"component": pluginName},
 		},
 	)
 }

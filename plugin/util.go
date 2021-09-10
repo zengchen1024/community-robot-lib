@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"encoding/json"
 	"fmt"
 
 	sdk "gitee.com/openeuler/go-gitee/gitee"
@@ -8,59 +9,110 @@ import (
 	"github.com/opensourceways/robot-gitee-plugin-lib/giteeclient"
 )
 
-func checkNoteEvent(e *sdk.NoteEvent) error {
-	eventType := "note event"
-	ne := giteeclient.NewNoteEventWrapper(e)
-	if ne.Comment == nil {
-		return fmtCheckError(eventType, "comment")
+func ConvertToNoteEvent(payload []byte) (e sdk.NoteEvent, err error) {
+	if err = json.Unmarshal(payload, &e); err != nil {
+		return
 	}
+
+	err = checkNoteEvent(&e)
+	return
+}
+
+func checkNoteEvent(e *sdk.NoteEvent) error {
+	eventType := giteeclient.EventTypeNote
+
+	ne := giteeclient.NewNoteEventWrapper(e)
+
+	if ne.Comment == nil {
+		return fmtCheckError(eventType, "Comment")
+	}
+
 	if ne.IsPullRequest() {
-		if err := checkPullRequestHook(ne.PullRequest, eventType); err != nil {
+		err := checkPullRequestHook(ne.PullRequest, eventType, "PullRequest")
+		if err != nil {
 			return err
 		}
 	}
+
 	if ne.IsIssue() && ne.Issue == nil {
-		return fmtCheckError(eventType, "issue")
+		return fmtCheckError(eventType, "Issue")
 	}
+
 	return checkRepository(e.Repository, eventType)
+}
+
+func ConvertToIssueEvent(payload []byte) (e sdk.IssueEvent, err error) {
+	if err = json.Unmarshal(payload, &e); err != nil {
+		return
+	}
+
+	err = checkIssueEvent(&e)
+	return
 }
 
 func checkIssueEvent(e *sdk.IssueEvent) error {
-	eventType := "issue event"
+	eventType := giteeclient.EventTypeIssue
+
 	if e.Issue == nil {
-		return fmtCheckError(eventType, "issue")
+		return fmtCheckError(eventType, "Issue")
 	}
+
 	return checkRepository(e.Repository, eventType)
+}
+
+func ConvertToPREvent(payload []byte) (e sdk.PullRequestEvent, err error) {
+	if err = json.Unmarshal(payload, &e); err != nil {
+		return
+	}
+
+	err = checkPullRequestEvent(&e)
+	return
 }
 
 func checkPullRequestEvent(e *sdk.PullRequestEvent) error {
-	eventType := "pull request event"
-	if err := checkPullRequestHook(e.PullRequest, eventType); err != nil {
+	eventType := giteeclient.EventTypePR
+
+	if err := checkPullRequestHook(e.PullRequest, eventType, "PullRequest"); err != nil {
 		return err
 	}
+
 	return checkRepository(e.Repository, eventType)
 }
 
-func checkPullRequestHook(pr *sdk.PullRequestHook, eventType string) error {
+func checkPullRequestHook(pr *sdk.PullRequestHook, eventType, field string) error {
 	if pr == nil {
-		return fmtCheckError(eventType, "pull_request")
+		return fmtCheckError(eventType, field)
 	}
+
 	if pr.Head == nil || pr.Base == nil {
-		return fmtCheckError(eventType, "pull_request.head or pull_request.base")
+		return fmtCheckError(eventType, field+".Head or "+field+".Base")
 	}
 	return nil
 }
 
 func checkRepository(rep *sdk.ProjectHook, eventType string) error {
+	field := "Repository"
+
 	if rep == nil {
-		return fmtCheckError(eventType, "pull_request")
+		return fmtCheckError(eventType, field)
 	}
-	if rep.Namespace == "" || rep.Path == "" {
-		return fmtCheckError(eventType, "pull_request.namespace or pull_request.path")
+
+	org, repo := giteeclient.GetOrgRepo(rep)
+	if org == "" || repo == "" {
+		return fmtCheckError(eventType, field+" .org or .repo")
 	}
 	return nil
 }
 
+func ConvertToPushEvent(payload []byte) (e sdk.PushEvent, err error) {
+	if err = json.Unmarshal(payload, &e); err != nil {
+		return
+	}
+
+	err = checkRepository(e.Repository, giteeclient.EventTypePush)
+	return
+}
+
 func fmtCheckError(eventType, field string) error {
-	return fmt.Errorf("%s is illegal: the %s field is empty", eventType, field)
+	return fmt.Errorf("%s is illegal: the field of '%s' is empty", eventType, field)
 }

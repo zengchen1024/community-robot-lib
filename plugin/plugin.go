@@ -7,6 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/opensourceways/robot-gitee-plugin-lib/config"
 	"github.com/opensourceways/robot-gitee-plugin-lib/options"
 	"github.com/opensourceways/robot-gitee-plugin-lib/plugin/interrupts"
 )
@@ -19,13 +20,13 @@ type HandlerRegitster interface {
 }
 
 type Plugin interface {
-	NewPluginConfig() PluginConfig
+	NewPluginConfig() config.PluginConfig
 	RegisterEventHandler(HandlerRegitster)
 	Exit()
 }
 
 func Run(p Plugin, o options.PluginOptions) {
-	agent := newConfigAgent(p.NewPluginConfig)
+	agent := config.NewConfigAgent(p.NewPluginConfig)
 	if err := agent.Start(o.PluginConfig); err != nil {
 		return
 	}
@@ -33,11 +34,12 @@ func Run(p Plugin, o options.PluginOptions) {
 	h := handlers{}
 	p.RegisterEventHandler(&h)
 
-	d := &dispatcher{c: agent, h: &h}
+	d := &dispatcher{agent: &agent, h: &h}
 
 	defer interrupts.WaitForGracefulShutdown()
 
 	interrupts.OnInterrupt(func() {
+		agent.Stop()
 		d.Wait()
 		p.Exit()
 	})
@@ -52,7 +54,11 @@ func Run(p Plugin, o options.PluginOptions) {
 }
 
 func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload := parseRequest(w, r)
+	eventType, eventGUID, payload, ok := parseRequest(w, r)
+
+	if !ok {
+		return
+	}
 
 	l := logrus.WithFields(
 		logrus.Fields{
@@ -62,11 +68,11 @@ func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err := d.Dispatch(eventType, payload, l); err != nil {
-		l.WithError(err).Error("Error parsing event.")
+		l.WithError(err).Error()
 	}
 }
 
-func parseRequest(w http.ResponseWriter, r *http.Request) (eventType string, uuid string, payload []byte) {
+func parseRequest(w http.ResponseWriter, r *http.Request) (eventType string, uuid string, payload []byte, ok bool) {
 	defer r.Body.Close()
 
 	resp := func(code int, msg string) {
@@ -86,9 +92,10 @@ func parseRequest(w http.ResponseWriter, r *http.Request) (eventType string, uui
 	v, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		resp(http.StatusInternalServerError, "500 Internal Server Error: Failed to read request body")
-		return "", "", nil
+		return
 	}
 	payload = v
+	ok = true
 
 	return
 }

@@ -13,7 +13,7 @@ type PRInfo struct {
 	BaseRef string
 	HeadSHA string
 	Author  string
-	Number  int
+	Number  int32
 	Labels  sets.String
 }
 
@@ -23,14 +23,15 @@ func (pr PRInfo) HasLabel(l string) bool {
 
 func GetPRInfoByPREvent(pre *sdk.PullRequestEvent) PRInfo {
 	pr := pre.PullRequest
+	org, repo := GetOwnerAndRepoByPREvent(pre)
 
 	return PRInfo{
-		Org:     pre.Repository.Namespace,
-		Repo:    pre.Repository.Path,
+		Org:     org,
+		Repo:    repo,
 		BaseRef: pr.Base.Ref,
 		HeadSHA: pr.Head.Sha,
 		Author:  pr.User.Login,
-		Number:  int(pr.Number),
+		Number:  pr.Number,
 		Labels:  getLabelFromEvent(pr.Labels),
 	}
 }
@@ -43,14 +44,26 @@ func getLabelFromEvent(labels []sdk.LabelHook) sets.String {
 	return m
 }
 
-//GetOwnerAndRepoByPREvent obtain the owner and repository name from the pullrequest's event
-func GetOwnerAndRepoByPREvent(pre *sdk.PullRequestEvent) (string, string) {
-	return pre.Repository.Namespace, pre.Repository.Path
+// GetOwnerAndRepoByPushEvent obtain the owner and repository name from the push event
+func GetOwnerAndRepoByPushEvent(pre *sdk.PushEvent) (string, string) {
+	return GetOrgRepo(pre.Repository)
 }
 
-//GetOwnerAndRepoByIssueEvent obtain the owner and repository name from the issue's event
+// GetOwnerAndRepoByPREvent obtain the owner and repository name from the pullrequest event
+func GetOwnerAndRepoByPREvent(pre *sdk.PullRequestEvent) (string, string) {
+	return GetOrgRepo(pre.Repository)
+}
+
+// GetOwnerAndRepoByIssueEvent obtain the owner and repository name from the issue event
 func GetOwnerAndRepoByIssueEvent(issue *sdk.IssueEvent) (string, string) {
-	return issue.Repository.Namespace, issue.Repository.Path
+	return GetOrgRepo(issue.Repository)
+}
+
+func GetOrgRepo(h *sdk.ProjectHook) (string, string) {
+	if h == nil {
+		return "", ""
+	}
+	return h.Namespace, h.Path
 }
 
 const (
@@ -59,6 +72,11 @@ const (
 	PRActionUpdatedLabel        = "update_label"
 	PRActionChangedTargetBranch = "target_branch_changed"
 	PRActionChangedSourceBranch = "source_branch_changed"
+
+	EventTypeNote  = "Note Hook"
+	EventTypePush  = "Push Hook"
+	EventTypeIssue = "Issue Hook"
+	EventTypePR    = "Merge Request Hook"
 )
 
 func GetPullRequestAction(e *sdk.PullRequestEvent) string {

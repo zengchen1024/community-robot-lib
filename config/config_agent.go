@@ -1,4 +1,4 @@
-package plugin
+package config
 
 import (
 	"crypto/md5"
@@ -16,6 +16,8 @@ type PluginConfig interface {
 	SetDefault()
 }
 
+// The returned value of NewPluginConfig must be a pointer.
+// Otherwise, it should deep copy the config when reading it.
 type NewPluginConfig func() PluginConfig
 
 type ConfigAgent struct {
@@ -26,8 +28,8 @@ type ConfigAgent struct {
 	md5Sum string
 }
 
-func newConfigAgent(b NewPluginConfig) *ConfigAgent {
-	return &ConfigAgent{b: b}
+func NewConfigAgent(b NewPluginConfig) ConfigAgent {
+	return ConfigAgent{b: b}
 }
 
 func (ca *ConfigAgent) load(path string) error {
@@ -37,6 +39,7 @@ func (ca *ConfigAgent) load(path string) error {
 	}
 
 	v := fmt.Sprintf("%x", md5.Sum(b))
+
 	if ca.md5Sum == v {
 		return nil
 	}
@@ -52,21 +55,21 @@ func (ca *ConfigAgent) load(path string) error {
 		return err
 	}
 
-	ca.md5Sum = v
-
 	ca.mut.Lock()
+	ca.md5Sum = v
 	ca.c = c
 	ca.mut.Unlock()
 
 	return nil
 }
 
-func (ca *ConfigAgent) GetConfig() PluginConfig {
-	ca.mut.Lock()
-	v := ca.c
-	ca.mut.Unlock()
+func (ca *ConfigAgent) GetConfig() (string, PluginConfig) {
+	ca.mut.RLock()
+	c := ca.c // copy the pointer
+	v := ca.md5Sum
+	ca.mut.RUnlock()
 
-	return v
+	return v, c
 }
 
 // Start starts polling path for plugin config. If the first attempt fails,
@@ -76,6 +79,8 @@ func (ca *ConfigAgent) Start(path string) error {
 		return err
 	}
 
+	l := logrus.WithField("path", path)
+
 	ticker := time.Tick(1 * time.Minute)
 	go func() {
 		for {
@@ -83,7 +88,7 @@ func (ca *ConfigAgent) Start(path string) error {
 			select {
 			case <-ticker:
 				if err := ca.load(path); err != nil {
-					logrus.WithField("path", path).WithError(err).Error("Error loading plugin config.")
+					l.WithError(err).Error("Error loading plugin config.")
 				}
 			case <-ca.stop:
 				break
