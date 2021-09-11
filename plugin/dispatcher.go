@@ -90,7 +90,7 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 	return nil
 }
 
-func (d dispatcher) getConfig() config.PluginConfig {
+func (d *dispatcher) getConfig() config.PluginConfig {
 	_, c := d.agent.GetConfig()
 	return c
 }
@@ -100,7 +100,7 @@ func (d *dispatcher) handlePullRequestEvent(e *sdk.PullRequestEvent, l *logrus.E
 
 	l = l.WithFields(logrus.Fields{
 		logFieldURL:    e.PullRequest.HtmlUrl,
-		logFieldAction: *e.Action,
+		logFieldAction: *e.ActionDesc,
 	})
 
 	if err := d.h.pullRequestHandler(e, d.getConfig(), l); err != nil {
