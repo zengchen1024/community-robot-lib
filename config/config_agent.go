@@ -31,7 +31,7 @@ type ConfigAgent struct {
 }
 
 func NewConfigAgent(b NewPluginConfig) ConfigAgent {
-	return ConfigAgent{b: b}
+	return ConfigAgent{b: b, t: utils.NewTimer()}
 }
 
 func (ca *ConfigAgent) load(path string) error {

@@ -2,8 +2,14 @@ package utils
 
 import "time"
 
+func NewTimer() Timer {
+	return Timer{
+		stop: make(chan struct{}),
+	}
+}
+
 type Timer struct {
-	stop   chan bool
+	stop   chan struct{}
 	stoped bool
 }
 
@@ -25,7 +31,7 @@ func (t *Timer) Start(f func(), interval time.Duration) {
 }
 
 func (t *Timer) Stop() {
-	t.stop <- true
+	close(t.stop)
 
 	ticker := time.Tick(1 * time.Millisecond)
 	for range ticker {
