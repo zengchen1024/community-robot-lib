@@ -9,14 +9,14 @@ type Timer interface {
 
 func NewTimer() Timer {
 	return timer{
-		stop:   make(chan struct{}),
-		stoped: make(chan struct{}),
+		stop:    make(chan struct{}),
+		stopped: make(chan struct{}),
 	}
 }
 
 type timer struct {
-	stop   chan struct{}
-	stoped chan struct{}
+	stop    chan struct{}
+	stopped chan struct{}
 }
 
 // Start triggers the work by the interval until recieving a stop signal.
@@ -29,7 +29,7 @@ func (t timer) Start(f func(), interval time.Duration) {
 			case <-ticker:
 				f()
 			case <-t.stop:
-				close(t.stoped)
+				close(t.stopped)
 				return
 			}
 		}
@@ -43,7 +43,7 @@ func (t timer) Stop() {
 
 	for range ticker {
 		select {
-		case <-t.stoped:
+		case <-t.stopped:
 			return
 		}
 	}
