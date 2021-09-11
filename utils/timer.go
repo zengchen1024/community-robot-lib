@@ -2,41 +2,49 @@ package utils
 
 import "time"
 
+type Timer interface {
+	Start(f func(), interval time.Duration)
+	Stop()
+}
+
 func NewTimer() Timer {
-	return Timer{
-		stop: make(chan struct{}),
+	return timer{
+		stop:   make(chan struct{}),
+		stoped: make(chan struct{}),
 	}
 }
 
-type Timer struct {
+type timer struct {
 	stop   chan struct{}
-	stoped bool
+	stoped chan struct{}
 }
 
-// Start starts work. If the first attempt fails, then returns the error.
-// It will trigger the work by the interval until recieving a stop signal.
-func (t *Timer) Start(f func(), interval time.Duration) {
+// Start triggers the work by the interval until recieving a stop signal.
+func (t timer) Start(f func(), interval time.Duration) {
 	ticker := time.Tick(interval)
+
 	go func() {
 		for {
 			select {
 			case <-ticker:
 				f()
 			case <-t.stop:
-				t.stoped = true
+				close(t.stoped)
 				return
 			}
 		}
 	}()
 }
 
-func (t *Timer) Stop() {
+func (t timer) Stop() {
 	close(t.stop)
 
 	ticker := time.Tick(1 * time.Millisecond)
+
 	for range ticker {
-		if t.stoped {
-			break
+		select {
+		case <-t.stoped:
+			return
 		}
 	}
 }
