@@ -24,7 +24,7 @@ func (t *Timer) Start(f func(), interval time.Duration) {
 				f()
 			case <-t.stop:
 				t.stoped = true
-				break
+				return
 			}
 		}
 	}()
