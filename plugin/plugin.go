@@ -79,6 +79,11 @@ func parseRequest(w http.ResponseWriter, r *http.Request) (eventType string, uui
 		http.Error(w, msg, code)
 	}
 
+	if r.Header.Get("User-Agent") != "Robot-Gitee-Access" {
+		resp(http.StatusBadRequest, "400 Bad Request: unknown User-Agent Header")
+		return
+	}
+
 	if eventType = r.Header.Get("X-Gitee-Event"); eventType == "" {
 		resp(http.StatusBadRequest, "400 Bad Request: Missing X-Gitee-Event Header")
 		return
