@@ -7,6 +7,7 @@ go_library(
         "converter.go",
         "error.go",
         "interface.go",
+        "issue_event.go",
         "note_event.go",
         "util.go",
         "webhooks.go",
