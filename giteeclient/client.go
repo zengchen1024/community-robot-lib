@@ -479,10 +479,25 @@ func (c *client) GetUserPermissionsOfRepo(org, repo, login string) (sdk.ProjectM
 	return permission, formatErr(err, "get user permissions")
 }
 
+// CreateRepoLabel create label for the repository
+func (c *client) CreateRepoLabel(org, repo, label, color string) error {
+	if color == "" {
+		color = genrateRGBColor()
+	}
+	param := sdk.LabelPostParam{
+		Name:  label,
+		Color: color,
+	}
+
+	_, _, err := c.ac.LabelsApi.PostV5ReposOwnerRepoLabels(context.Background(), org, repo, param)
+
+	return formatErr(err, "create a repo label")
+}
+
 func formatErr(err error, doWhat string) error {
 	if err == nil {
 		return err
 	}
 
-	return fmt.Errorf("Failed to %s: %s", doWhat, err.Error())
+	return fmt.Errorf("failed to %s: %s", doWhat, err.Error())
 }
