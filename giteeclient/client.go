@@ -634,5 +634,10 @@ func formatErr(err error, doWhat string) error {
 		return err
 	}
 
-	return fmt.Errorf("failed to %s: %s", doWhat, err.Error())
+	var msg []byte
+	if v, ok := err.(sdk.GenericSwaggerError); ok {
+		msg = v.Body()
+	}
+
+	return fmt.Errorf("failed to %s, err: %s, msg: %q", doWhat, err.Error(), msg)
 }
