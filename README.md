@@ -48,6 +48,8 @@ This is a library to make the development of a robot based on [Gitee](https://gi
   It includes several useful functions which may be used in robot.
 
 # How to develop a robot with this lib.
+The current available robots are [**these**](https://github.com/opensourceways?q=robot-gitee-&type=public&language=&sort=name). They are the good examples to help you develop your own.
+
 It is very easy to develop a robot by the help of [new_robot.sh](https://github.com/opensourceways/community-robot-lib/blob/master/tools/new_robot.sh).
 Dowload and run it on the shell to generate the initial codes of robot.
 
@@ -90,3 +92,27 @@ Initialized empty Git repository in /data/go_workspace/workspace/src/github.com/
 ```
 
 It generates 3 go files(main.go, config.go, robot.go) and you can implement the robot by modifying them or adding any arbitrary go files.
+
+# How to test your robot
+The robot handles the events sent by Gitee. So, it should recieve the events first. The [robot-gitee-access](https://github.com/opensourceways/robot-gitee-access) implements the function of it.
+
+The component diagram of robots is bellow.
+
+![component](docs/component.svg)
+
+The sequence diagram of handling events is bellow.
+
+![sequence](docs/sequence.svg)
+
+Therefore, there are 3 steps to be done before testing the robot.
+
+- First, run the robot you developed.
+
+- Second, run robot-gitee-access.
+
+- At last, register a webhook to Gitee with the endpoint of robot-gitee-access.
+
+Then enjoy the game of robot.
+
+# How to start robot-gitee-access
+It is easy to start robot-gitee-access, please see the [**README**](https://github.com/opensourceways/robot-gitee-access/blob/master/README.md) to get details.
