@@ -6,7 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type PluginForRepo struct {
+type RepoFilter struct {
 	// Repos is either in the form of org/repos or just org.
 	Repos []string `json:"repos" required:"true"`
 
@@ -19,7 +19,7 @@ type PluginForRepo struct {
 // true,  true:  the config can be applied to the org and org/repo
 // false, true:  the config can be applied to the org except org/repo
 // false, false: the config can be applied to neither org or org/repo
-func (p PluginForRepo) CanApply(org, orgRepo string) (applyOrgRepo bool, applyOrg bool) {
+func (p RepoFilter) CanApply(org, orgRepo string) (applyOrgRepo bool, applyOrg bool) {
 	v := sets.NewString(p.Repos...)
 	if v.Has(orgRepo) {
 		applyOrgRepo = true
@@ -40,7 +40,7 @@ func (p PluginForRepo) CanApply(org, orgRepo string) (applyOrgRepo bool, applyOr
 	return
 }
 
-func (p PluginForRepo) Validate() error {
+func (p RepoFilter) Validate() error {
 	if sets.NewString(p.Repos...).HasAny(p.ExcludedRepos...) {
 		return fmt.Errorf("some org or org/repo exists in both repos and excluded_repos")
 	}
@@ -48,11 +48,11 @@ func (p PluginForRepo) Validate() error {
 	return nil
 }
 
-type IPluginForRepo interface {
+type IRepoFilter interface {
 	CanApply(org, orgRepo string) (applyOrgRepo bool, applyOrg bool)
 }
 
-func FindConfig(org, repo string, cfg []IPluginForRepo) int {
+func Find(org, repo string, cfg []IRepoFilter) int {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
 
 	index := -1

@@ -3,13 +3,13 @@ This is a library to make the development of a robot based on [Gitee](https://gi
 # Functions
 - [config](https://github.com/opensourceways/community-robot-lib/blob/master/config)
 
-  It is a common component which includes a agent to watch the config file of robot and a configuration item([PluginForRepo](https://github.com/opensourceways/community-robot-lib/blob/master/config/plugin_for_repo.go#L9)) which can restrict the config to a specified organization or a repository.
+  It is a common component which includes a agent to watch the config file of robot and a repository filter([RepoFilter](https://github.com/opensourceways/community-robot-lib/blob/master/config/repo_filter.go#L9)) which can restrict the config to a specified organization or a repository.
 
 - [giteeclient](https://github.com/opensourceways/community-robot-lib/blob/master/giteeclient)
 
   It is a swapper to encapsulate dozens of frequently-used Gitee APIs.
 
-- [giteeplugin](https://github.com/opensourceways/community-robot-lib/blob/master/giteeplugin)
+- [robot-gitee-framework](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-framework)
 
   It is the framework of robot based on Gitee. It implements the interfaces to register the event handler and dispatch the event to each handler.
   It is very easy to implement a new robot based on Gitee with it.
@@ -22,10 +22,10 @@ This is a library to make the development of a robot based on [Gitee](https://gi
 
   It is copied from [prow](https://github.com/kubernetes/test-infra/tree/master/prow/logrusutil) and implement the function to print log.
 
-- [new-plugin](https://github.com/opensourceways/community-robot-lib/blob/master/new-plugin)
+- [robot-gitee-template](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-template)
 
   It is the template of a robot based on Gitee. The robot uses the Bazel to manage the dependencies.
-  The [build.sh](https://github.com/opensourceways/community-robot-lib/blob/master/new-plugin/build.sh) is the useful tool to compile and build image.
+  The [build.sh](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-template/build.sh) is the useful tool to compile and build image.
 
 - [options](https://github.com/opensourceways/community-robot-lib/blob/master/options)
 
@@ -39,9 +39,7 @@ This is a library to make the development of a robot based on [Gitee](https://gi
 
   It includes two useful scripts.
 
-  The **new_robot.sh** can geneate the initial robot codes by downloading the files in the [new-plugin](https://github.com/opensourceways/community-robot-lib/blob/master/new-plugin).
-
-  The **deploy_plugin.sh** is used to deploy robots on the k8s environment and update the image when the robot changes.
+  The **new_robot.sh** can geneate the initial robot codes by downloading the files in the [robot-gitee-template](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-template).
 
 - [utils](https://github.com/opensourceways/community-robot-lib/blob/master/utils)
 
@@ -158,7 +156,7 @@ config_items:
   - zengchen1024/repo-test
   congratulation: "congratulation"
 
-# ./robot-gitee-sweepstakes --port=8888 --robot-config=./config.yaml --gitee-token-path=./token
+# ./robot-gitee-sweepstakes --port=8888 --config-file=./config.yaml --gitee-token-path=./token
 
 ```
 

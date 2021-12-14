@@ -5,9 +5,9 @@ go_library(
     srcs = [
         "dispatcher.go",
         "handlers.go",
-        "plugin.go",
+        "service.go",
     ],
-    importpath = "github.com/opensourceways/community-robot-lib/giteeplugin",
+    importpath = "github.com/opensourceways/community-robot-lib/robot-gitee-framework",
     visibility = ["//visibility:public"],
     deps = [
         "//config:go_default_library",

@@ -1,4 +1,4 @@
-package giteeplugin
+package framework
 
 import (
 	"gitee.com/openeuler/go-gitee/gitee"
@@ -8,16 +8,16 @@ import (
 )
 
 // IssueHandler defines the function contract for a gitee.IssueEvent handler.
-type IssueHandler func(e *gitee.IssueEvent, cfg config.PluginConfig, log *logrus.Entry) error
+type IssueHandler func(e *gitee.IssueEvent, cfg config.Config, log *logrus.Entry) error
 
 // PullRequestHandler defines the function contract for a gitee.PullRequestEvent handler.
-type PullRequestHandler func(e *gitee.PullRequestEvent, cfg config.PluginConfig, log *logrus.Entry) error
+type PullRequestHandler func(e *gitee.PullRequestEvent, cfg config.Config, log *logrus.Entry) error
 
 // PushEventHandler defines the function contract for a gitee.PushEvent handler.
-type PushEventHandler func(e *gitee.PushEvent, cfg config.PluginConfig, log *logrus.Entry) error
+type PushEventHandler func(e *gitee.PushEvent, cfg config.Config, log *logrus.Entry) error
 
 // NoteEventHandler defines the function contract for a gitee.NoteEvent handler.
-type NoteEventHandler func(e *gitee.NoteEvent, cfg config.PluginConfig, log *logrus.Entry) error
+type NoteEventHandler func(e *gitee.NoteEvent, cfg config.Config, log *logrus.Entry) error
 
 type handlers struct {
 	issueHandlers      IssueHandler

@@ -1,4 +1,4 @@
-package giteeplugin
+package framework
 
 import (
 	"sync"
@@ -90,7 +90,7 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 	return nil
 }
 
-func (d *dispatcher) getConfig() config.PluginConfig {
+func (d *dispatcher) getConfig() config.Config {
 	_, c := d.agent.GetConfig()
 	return c
 }
