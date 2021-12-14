@@ -1,7 +1,7 @@
 package giteeclient
 
 import (
-	sdk "gitee.com/openeuler/go-gitee/gitee"
+	sdk "github.com/opensourceways/go-gitee/gitee"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 

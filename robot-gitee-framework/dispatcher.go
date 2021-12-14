@@ -3,7 +3,7 @@ package framework
 import (
 	"sync"
 
-	sdk "gitee.com/openeuler/go-gitee/gitee"
+	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/community-robot-lib/config"

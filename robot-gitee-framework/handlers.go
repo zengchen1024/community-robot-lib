@@ -1,7 +1,7 @@
 package framework
 
 import (
-	"gitee.com/openeuler/go-gitee/gitee"
+	"github.com/opensourceways/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/community-robot-lib/config"

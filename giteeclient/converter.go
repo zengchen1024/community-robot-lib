@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	sdk "gitee.com/openeuler/go-gitee/gitee"
+	sdk "github.com/opensourceways/go-gitee/gitee"
 )
 
 func ConvertToNoteEvent(payload []byte) (e sdk.NoteEvent, err error) {
