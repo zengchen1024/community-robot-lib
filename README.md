@@ -1,6 +1,6 @@
 This is a library to make the development of a robot based on [Gitee](https://gitee.com) simpler.
 
-# The functions of the lib
+# Functions
 - [config](https://github.com/opensourceways/community-robot-lib/blob/master/config)
 
   It is a common component which includes a agent to watch the config file of robot and a configuration item([PluginForRepo](https://github.com/opensourceways/community-robot-lib/blob/master/config/plugin_for_repo.go#L9)) which can restrict the config to a specified organization or a repository.
@@ -39,9 +39,9 @@ This is a library to make the development of a robot based on [Gitee](https://gi
 
   It includes two useful scripts.
 
-  The '**new_robot.sh**' can geneate the initial robot codes by downloading the files in the [new-plugin](https://github.com/opensourceways/community-robot-lib/blob/master/new-plugin).
+  The **new_robot.sh** can geneate the initial robot codes by downloading the files in the [new-plugin](https://github.com/opensourceways/community-robot-lib/blob/master/new-plugin).
 
-  The '**deploy_plugin.sh**' is used to deploy robots on the k8s environment and update the image when the robot changes.
+  The **deploy_plugin.sh** is used to deploy robots on the k8s environment and update the image when the robot changes.
 
 - [utils](https://github.com/opensourceways/community-robot-lib/blob/master/utils)
 
@@ -89,12 +89,83 @@ Initialized empty Git repository in /data/go_workspace/workspace/src/github.com/
  create mode 100644 main.go
  create mode 100755 publish/command_status.sh
  create mode 100644 robot.go
+
 ```
 
 It generates 3 go files(main.go, config.go, robot.go) and you can implement the robot by modifying them or adding any arbitrary go files.
 
-# How to test your robot
-The robot handles the events sent by Gitee. So, it should recieve the events first. The [robot-gitee-access](https://github.com/opensourceways/robot-gitee-access) implements the function of it.
+# How to run a robot
+The robot use Bazel to compile and build/push image, so it should install it first.
+You can reference [**here**](https://docs.bazel.build/versions/main/install.html) to install it.
+Besides the robot had preset the version of bazel in file of `.bazelversion`, so it should install the one with matched version.
+
+When you finish developping a robot, run `./build.sh build` to compile, which will genereate a binary file.
+Take [robot-gitee-sweepstakes](https://github.com/opensourceways/robot-gitee-sweepstakes) as an example.
+
+```shell
+
+# ./build.sh build
+
+*************** update repo ***************
+
+Starting local Bazel server and connecting to it...
+INFO: Analyzed target //:gazelle (66 packages loaded, 6952 targets configured).
+INFO: Found 1 target...
+Target //:gazelle up-to-date:
+  bazel-bin/gazelle-runner.bash
+  bazel-bin/gazelle
+INFO: Elapsed time: 44.495s, Critical Path: 7.82s
+INFO: 36 processes: 36 linux-sandbox.
+INFO: Build completed successfully, 49 total actions
+INFO: Build completed successfully, 49 total actions
+INFO: Analyzed target //:gazelle (4 packages loaded, 93 targets configured).
+INFO: Found 1 target...
+Target //:gazelle up-to-date:
+  bazel-bin/gazelle-runner.bash
+  bazel-bin/gazelle
+INFO: Elapsed time: 2.306s, Critical Path: 0.10s
+INFO: 0 processes.
+INFO: Build completed successfully, 1 total action
+INFO: Build completed successfully, 1 total action
+
+*************** build binary ***************
+
+INFO: Build option --platforms has changed, discarding analysis cache.
+INFO: Analyzed target //:robot-gitee-sweepstakes (19 packages loaded, 7143 targets configured).
+INFO: Found 1 target...
+Target //:robot-gitee-sweepstakes up-to-date:
+  bazel-bin/robot-gitee-sweepstakes_/robot-gitee-sweepstakes
+INFO: Elapsed time: 23.741s, Critical Path: 17.52s
+INFO: 21 processes: 21 linux-sandbox.
+INFO: Build completed successfully, 24 total actions
+
+```
+
+The target binary is at `bazel-bin/robot-gitee-sweepstakes_/robot-gitee-sweepstakes`.
+
+Next, it is time to start it. Before starts it, there are 2 steps to be done.
+
+- It should create a config file with format of yaml which is needed by the robot.
+
+- It should generate a personal token of a robot account on Gitee and save it in a file.
+
+```shell
+
+# cat config.yaml
+
+config_items:
+- repos:
+  - zengchen1024/repo-test
+  congratulation: "congratulation"
+
+# ./robot-gitee-sweepstakes --port=8888 --robot-config=./config.yaml --gitee-token-path=./token
+
+```
+
+The command above will start the robot in a web service which is listening on port of `8888` and ready to handle the webhook event of Gitee.
+
+# How to test a robot
+The robot handles the events sent by Gitee. So, it should receive the events first. The [robot-gitee-access](https://github.com/opensourceways/robot-gitee-access) implements the function of it.
 
 The component diagram of robots is bellow.
 
