@@ -51,7 +51,7 @@ func main() {
 
 	c := giteeclient.NewClient(secretAgent.GetTokenGenerator(o.gitee.TokenPath))
 
-	p := newRobot(c)
+	r := newRobot(c)
 
-	framework.Run(p, o.service)
+	framework.Run(r, o.service)
 }
