@@ -63,13 +63,6 @@ go_repository(
 )
 
 go_repository(
-    name = "com_gitee_openeuler_go_gitee",
-    importpath = "gitee.com/openeuler/go-gitee",
-    sum = "h1:q0HrdRjcWiILt14Z4CZKLiCV9QLQCGlGO/XDpmB7ebc=",
-    version = "v0.0.0-20211203025010-125370920041",
-)
-
-go_repository(
     name = "com_github_antihax_optional",
     importpath = "github.com/antihax/optional",
     sum = "h1:xK2lYat7ZLaVVcIuj82J8kIro4V6kDe0AUDFboUCwcg=",
