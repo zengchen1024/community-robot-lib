@@ -9,11 +9,6 @@ This is a library to make the development of a robot based on [Gitee](https://gi
 
   It is a swapper to encapsulate dozens of frequently-used Gitee APIs.
 
-- [robot-gitee-framework](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-framework)
-
-  It is the framework of robot based on Gitee. It implements the interfaces to register the event handler and dispatch the event to each handler.
-  It is very easy to implement a new robot based on Gitee with it.
-
 - [interrupts](https://github.com/opensourceways/community-robot-lib/blob/master/interrupts)
 
   It is copied from [prow](https://github.com/kubernetes/test-infra/tree/master/prow/interrupts) and implement the function to control the exit of service.
@@ -22,14 +17,19 @@ This is a library to make the development of a robot based on [Gitee](https://gi
 
   It is copied from [prow](https://github.com/kubernetes/test-infra/tree/master/prow/logrusutil) and implement the function to print log.
 
+- [options](https://github.com/opensourceways/community-robot-lib/blob/master/options)
+
+  It includes the common options for a robot.
+
+- [robot-gitee-framework](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-framework)
+
+  It is the framework of robot based on Gitee. It implements the interfaces to register the event handler and dispatch the event to each handler.
+  It is very easy to implement a new robot based on Gitee with it.
+  
 - [robot-gitee-template](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-template)
 
   It is the template of a robot based on Gitee. The robot uses the Bazel to manage the dependencies.
   The [build.sh](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-template/build.sh) is the useful tool to compile and build image.
-
-- [options](https://github.com/opensourceways/community-robot-lib/blob/master/options)
-
-  It includes the common options for a robot.
 
 - [secret](https://github.com/opensourceways/community-robot-lib/blob/master/secret)
 
