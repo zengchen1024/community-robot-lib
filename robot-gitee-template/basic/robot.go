@@ -41,22 +41,22 @@ func (bot *robot) RegisterEventHandler(p framework.HandlerRegitster) {
 	p.RegisterPushEventHandler(bot.handlePushEvent)
 }
 
-func (bot *robot) handlePREvent(e *sdk.PullRequestEvent, cfg config.Config, log *logrus.Entry) error {
+func (bot *robot) handlePREvent(e *sdk.PullRequestEvent, c config.Config, log *logrus.Entry) error {
 	// TODO: if it doesn't needd to hand PR event, delete this function.
 	return nil
 }
 
-func (bot *robot) handleIssueEvent(e *sdk.IssueEvent, cfg config.Config, log *logrus.Entry) error {
+func (bot *robot) handleIssueEvent(e *sdk.IssueEvent, c config.Config, log *logrus.Entry) error {
 	// TODO: if it doesn't needd to hand Issue event, delete this function.
 	return nil
 }
 
-func (bot *robot) handlePushEvent(e *sdk.PushEvent, cfg config.Config, log *logrus.Entry) error {
+func (bot *robot) handlePushEvent(e *sdk.PushEvent, c config.Config, log *logrus.Entry) error {
 	// TODO: if it doesn't needd to hand Push event, delete this function.
 	return nil
 }
 
-func (bot *robot) handleNoteEvent(e *sdk.NoteEvent, cfg config.Config, log *logrus.Entry) error {
+func (bot *robot) handleNoteEvent(e *sdk.NoteEvent, c config.Config, log *logrus.Entry) error {
 	// TODO: if it doesn't needd to hand Note event, delete this function.
 	return nil
 }
