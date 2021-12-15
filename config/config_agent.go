@@ -13,24 +13,24 @@ import (
 	"github.com/opensourceways/community-robot-lib/utils"
 )
 
-type PluginConfig interface {
+type Config interface {
 	Validate() error
 	SetDefault()
 }
 
-// The returned value of NewPluginConfig must be a pointer.
+// The returned value of NewConfig must be a pointer.
 // Otherwise, it should deep copy the config when reading it.
-type NewPluginConfig func() PluginConfig
+type NewConfig func() Config
 
 type ConfigAgent struct {
 	mut    sync.RWMutex
-	c      PluginConfig
-	b      NewPluginConfig
+	c      Config
+	b      NewConfig
 	md5Sum string
 	t      utils.Timer
 }
 
-func NewConfigAgent(b NewPluginConfig) ConfigAgent {
+func NewConfigAgent(b NewConfig) ConfigAgent {
 	return ConfigAgent{b: b, t: utils.NewTimer()}
 }
 
@@ -65,7 +65,7 @@ func (ca *ConfigAgent) load(path string) error {
 	return nil
 }
 
-func (ca *ConfigAgent) GetConfig() (string, PluginConfig) {
+func (ca *ConfigAgent) GetConfig() (string, Config) {
 	ca.mut.RLock()
 	c := ca.c // copy the pointer
 	v := ca.md5Sum

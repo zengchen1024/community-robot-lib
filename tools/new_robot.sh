@@ -101,13 +101,13 @@ build(){
 
     git clone https://github.com/opensourceways/community-robot-lib.git
 
-    cp -r community-robot-lib/new-plugin/. .
+    cp -r community-robot-lib/robot-gitee-template/. .
 
     rm -fr community-robot-lib 
 
-    cp -r giteeplugin/. .
+    cp -r basic/. .
 
-    rm -fr giteeplugin
+    rm -fr basic
 
 
     repo_path=${remote_repo}/$robot_name
@@ -117,10 +117,10 @@ build(){
 
     repo_path=${repo_path//\//\\\/}
 
-    sed -i -e "s/{PLUGIN_REPO}/${repo_path}/" ./BUILD.bazel
-    sed -i -e "s/{PLUGIN_NAME}/${robot_name}/" ./BUILD.bazel
+    sed -i -e "s/{REPO_PATH}/${repo_path}/" ./BUILD.bazel
+    sed -i -e "s/{ROBOT_NAME}/${robot_name}/" ./BUILD.bazel
 
-    sed -i -e "s/{PLUGIN_REPO}/${repo_path}/" ./build.sh
+    sed -i -e "s/{REPO_PATH}/${repo_path}/" ./build.sh
 
     git add .
     git commit -m "init repo"

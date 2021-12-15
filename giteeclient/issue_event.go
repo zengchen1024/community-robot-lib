@@ -1,6 +1,6 @@
 package giteeclient
 
-import sdk "gitee.com/openeuler/go-gitee/gitee"
+import sdk "github.com/opensourceways/go-gitee/gitee"
 
 // NewIssueEventWrapper creates a wrapper of issue event.
 func NewIssueEventWrapper(e *sdk.IssueEvent) IssueEventWrapper {

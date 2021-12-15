@@ -4,7 +4,7 @@ set -euo pipefail
 
 cd $(dirname $0)
 me=$(basename $0)
-plugin_name=$(pwd | xargs basename)
+robot_name=$(pwd | xargs basename)
 pn=$#
 all_param=( $@ )
 
@@ -20,7 +20,7 @@ update_repo(){
     if [ -f go.mod ]; then
         go mod tidy
     else
-        go mod init {PLUGIN_REPO}
+        go mod init {REPO_PATH}
         go mod tidy
     fi
 
@@ -34,7 +34,7 @@ build(){
 
     tips "build binary"
 
-    $bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //:$plugin_name
+    $bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //:$robot_name
 }
 
 image(){

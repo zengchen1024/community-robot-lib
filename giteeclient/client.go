@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	sdk "gitee.com/openeuler/go-gitee/gitee"
 	"github.com/antihax/optional"
+	sdk "github.com/opensourceways/go-gitee/gitee"
 	"golang.org/x/oauth2"
 )
 

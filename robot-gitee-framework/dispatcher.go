@@ -1,9 +1,9 @@
-package giteeplugin
+package framework
 
 import (
 	"sync"
 
-	sdk "gitee.com/openeuler/go-gitee/gitee"
+	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/community-robot-lib/config"
@@ -90,7 +90,7 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 	return nil
 }
 
-func (d *dispatcher) getConfig() config.PluginConfig {
+func (d *dispatcher) getConfig() config.Config {
 	_, c := d.agent.GetConfig()
 	return c
 }

@@ -1,4 +1,4 @@
-package giteeplugin
+package framework
 
 import (
 	"io/ioutil"
@@ -19,15 +19,15 @@ type HandlerRegitster interface {
 	RegisterNoteEventHandler(NoteEventHandler)
 }
 
-type Plugin interface {
-	NewPluginConfig() config.PluginConfig
+type Robot interface {
+	NewConfig() config.Config
 	RegisterEventHandler(HandlerRegitster)
 }
 
-func Run(p Plugin, o options.PluginOptions) {
-	agent := config.NewConfigAgent(p.NewPluginConfig)
-	if err := agent.Start(o.PluginConfig); err != nil {
-		logrus.WithError(err).Errorf("start config:%s", o.PluginConfig)
+func Run(p Robot, o options.ServiceOptions) {
+	agent := config.NewConfigAgent(p.NewConfig)
+	if err := agent.Start(o.ConfigFile); err != nil {
+		logrus.WithError(err).Errorf("start config:%s", o.ConfigFile)
 		return
 	}
 
