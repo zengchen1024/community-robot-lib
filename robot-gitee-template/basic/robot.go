@@ -34,11 +34,11 @@ func (bot *robot) getConfig(cfg config.Config) (*configuration, error) {
 	return nil, errors.New("can't convert to configuration")
 }
 
-func (bot *robot) RegisterEventHandler(p framework.HandlerRegitster) {
-	p.RegisterIssueHandler(bot.handleIssueEvent)
-	p.RegisterPullRequestHandler(bot.handlePREvent)
-	p.RegisterNoteEventHandler(bot.handleNoteEvent)
-	p.RegisterPushEventHandler(bot.handlePushEvent)
+func (bot *robot) RegisterEventHandler(f framework.HandlerRegitster) {
+	f.RegisterIssueHandler(bot.handleIssueEvent)
+	f.RegisterPullRequestHandler(bot.handlePREvent)
+	f.RegisterNoteEventHandler(bot.handleNoteEvent)
+	f.RegisterPushEventHandler(bot.handlePushEvent)
 }
 
 func (bot *robot) handlePREvent(e *sdk.PullRequestEvent, c config.Config, log *logrus.Entry) error {
