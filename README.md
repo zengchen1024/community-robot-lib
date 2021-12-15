@@ -37,8 +37,6 @@ This is a library to make the development of a robot based on [Gitee](https://gi
 
 - [tools](https://github.com/opensourceways/community-robot-lib/blob/master/tools)
 
-  It includes two useful scripts.
-
   The **new_robot.sh** can geneate the initial robot codes by downloading the files in the [robot-gitee-template](https://github.com/opensourceways/community-robot-lib/blob/master/robot-gitee-template).
 
 - [utils](https://github.com/opensourceways/community-robot-lib/blob/master/utils)
