@@ -50,6 +50,7 @@ type Client interface {
 
 	AssignGiteeIssue(org, repo string, number string, login string) error
 	UnassignGiteeIssue(org, repo string, number string, login string) error
+	RemoveIssueAssignee(org, repo string, number string) error
 	CreateIssueComment(org, repo string, number string, comment string) error
 	UpdateIssueComment(org, repo string, commentID int32, comment string) error
 	ListIssueComments(org, repo, number string) ([]sdk.Note, error)

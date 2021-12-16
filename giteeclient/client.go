@@ -313,6 +313,10 @@ func (c *client) UnassignGiteeIssue(org, repo string, number string, login strin
 	return c.AssignGiteeIssue(org, repo, number, " ")
 }
 
+func (c *client) RemoveIssueAssignee(org, repo string, number string) error {
+	return c.AssignGiteeIssue(org, repo, number, " ")
+}
+
 func (c *client) CreateIssueComment(org, repo string, number string, comment string) error {
 	opt := sdk.IssueCommentPostParam{Body: comment}
 	_, _, err := c.ac.IssuesApi.PostV5ReposOwnerRepoIssuesNumberComments(
