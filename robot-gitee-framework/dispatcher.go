@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/community-robot-lib/config"
-	"github.com/opensourceways/community-robot-lib/giteeclient"
 )
 
 const (
@@ -32,12 +31,12 @@ func (d *dispatcher) Wait() {
 
 func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry) error {
 	switch eventType {
-	case giteeclient.EventTypeNote:
+	case sdk.EventTypeNote:
 		if d.h.noteEventHandler == nil {
 			return nil
 		}
 
-		e, err := giteeclient.ConvertToNoteEvent(payload)
+		e, err := sdk.ConvertToNoteEvent(payload)
 		if err != nil {
 			return err
 		}
@@ -45,12 +44,12 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 		d.wg.Add(1)
 		go d.handleNoteEvent(&e, l)
 
-	case giteeclient.EventTypeIssue:
+	case sdk.EventTypeIssue:
 		if d.h.issueHandlers == nil {
 			return nil
 		}
 
-		e, err := giteeclient.ConvertToIssueEvent(payload)
+		e, err := sdk.ConvertToIssueEvent(payload)
 		if err != nil {
 			return err
 		}
@@ -58,12 +57,12 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 		d.wg.Add(1)
 		go d.handleIssueEvent(&e, l)
 
-	case giteeclient.EventTypePR:
+	case sdk.EventTypePR:
 		if d.h.pullRequestHandler == nil {
 			return nil
 		}
 
-		e, err := giteeclient.ConvertToPREvent(payload)
+		e, err := sdk.ConvertToPREvent(payload)
 		if err != nil {
 			return err
 		}
@@ -71,12 +70,12 @@ func (d *dispatcher) Dispatch(eventType string, payload []byte, l *logrus.Entry)
 		d.wg.Add(1)
 		go d.handlePullRequestEvent(&e, l)
 
-	case giteeclient.EventTypePush:
+	case sdk.EventTypePush:
 		if d.h.pushEventHandler == nil {
 			return nil
 		}
 
-		e, err := giteeclient.ConvertToPushEvent(payload)
+		e, err := sdk.ConvertToPushEvent(payload)
 		if err != nil {
 			return err
 		}
@@ -128,7 +127,7 @@ func (d *dispatcher) handleIssueEvent(e *sdk.IssueEvent, l *logrus.Entry) {
 func (d *dispatcher) handlePushEvent(e *sdk.PushEvent, l *logrus.Entry) {
 	defer d.wg.Done()
 
-	org, repo := giteeclient.GetOwnerAndRepoByPushEvent(e)
+	org, repo := e.GetOrgRepo()
 
 	l = l.WithFields(logrus.Fields{
 		logFieldOrg:  org,
