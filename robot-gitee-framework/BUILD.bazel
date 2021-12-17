@@ -11,7 +11,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//config:go_default_library",
-        "//giteeclient:go_default_library",
         "//interrupts:go_default_library",
         "//options:go_default_library",
         "@com_github_opensourceways_go_gitee//gitee:go_default_library",
