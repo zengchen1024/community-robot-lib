@@ -22,7 +22,7 @@ type timer struct {
 // Start triggers the work by the interval until recieving a stop signal.
 func (t timer) Start(f func(), interval, delay time.Duration) {
 	go func(f func(), interval, delay time.Duration) {
-		if delay != 0 {
+		if delay > 0 {
 			select {
 			case <-time.After(delay):
 				f()
