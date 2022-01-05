@@ -51,12 +51,5 @@ func (t timer) Start(f func(), interval, delay time.Duration) {
 func (t timer) Stop() {
 	close(t.stop)
 
-	ticker := time.Tick(1 * time.Millisecond)
-
-	for range ticker {
-		select {
-		case <-t.stopped:
-			return
-		}
-	}
+	<-t.stopped
 }
