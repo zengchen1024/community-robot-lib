@@ -3,7 +3,7 @@ package utils
 import "time"
 
 type Timer interface {
-	Start(f func(), interval time.Duration)
+	Start(f func(), interval, delay time.Duration)
 	Stop()
 }
 
@@ -20,10 +20,22 @@ type timer struct {
 }
 
 // Start triggers the work by the interval until recieving a stop signal.
-func (t timer) Start(f func(), interval time.Duration) {
-	ticker := time.Tick(interval)
+func (t timer) Start(f func(), interval, delay time.Duration) {
+	go func(f func(), interval, delay time.Duration) {
+		if delay != 0 {
+			select {
+			case <-time.After(delay):
+				f()
+			case <-t.stop:
+				close(t.stopped)
+				return
+			}
+		}
 
-	go func() {
+		// the ticker will fire after interval,
+		// which means the f will run for the first time after interval.
+		ticker := time.Tick(interval)
+
 		for {
 			select {
 			case <-ticker:
@@ -33,7 +45,7 @@ func (t timer) Start(f func(), interval time.Duration) {
 				return
 			}
 		}
-	}()
+	}(f, interval, delay)
 }
 
 func (t timer) Stop() {
