@@ -3,6 +3,7 @@ package giteeclient
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	sdk "github.com/opensourceways/go-gitee/gitee"
@@ -34,6 +35,6 @@ In response to [this](%s):
 
 	return fmt.Sprintf(
 		format, e.GetCommenter(), reply,
-		fmt.Sprintf(details, c.GetHtmlUrl(), c.GetBody()),
+		fmt.Sprintf(details, c.GetHtmlUrl(), strings.ReplaceAll(">"+c.GetBody(), "\n", "\n>")),
 	)
 }
