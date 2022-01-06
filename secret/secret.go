@@ -93,7 +93,7 @@ func (s *singleSecret) load() {
 }
 
 func (s singleSecret) start() {
-	s.t.Start(s.load, 1*time.Second)
+	s.t.Start(s.load, 1*time.Second, 0)
 }
 
 func (s singleSecret) stop() {
