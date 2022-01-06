@@ -90,6 +90,7 @@ func (ca *ConfigAgent) Start(path string) error {
 			}
 		},
 		1*time.Minute,
+		0,
 	)
 
 	return nil
