@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 
+	sdk "github.com/google/go-github/v36/github"
 	"github.com/opensourceways/community-robot-lib/config"
-	"github.com/opensourceways/community-robot-lib/robot-gitee-framework"
-	sdk "github.com/opensourceways/go-gitee/gitee"
+	framework "github.com/opensourceways/community-robot-lib/robot-github-framework"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,7 +37,7 @@ func (bot *robot) getConfig(cfg config.Config) (*configuration, error) {
 func (bot *robot) RegisterEventHandler(f framework.HandlerRegister) {
 	f.RegisterIssueHandler(bot.handleIssueEvent)
 	f.RegisterPullRequestHandler(bot.handlePREvent)
-	f.RegisterNoteEventHandler(bot.handleNoteEvent)
+	f.RegisterIssueCommentHandler(bot.handleNoteEvent)
 	f.RegisterPushEventHandler(bot.handlePushEvent)
 }
 
@@ -46,7 +46,7 @@ func (bot *robot) handlePREvent(e *sdk.PullRequestEvent, c config.Config, log *l
 	return nil
 }
 
-func (bot *robot) handleIssueEvent(e *sdk.IssueEvent, c config.Config, log *logrus.Entry) error {
+func (bot *robot) handleIssueEvent(e *sdk.IssuesEvent, c config.Config, log *logrus.Entry) error {
 	// TODO: if it doesn't needd to hand Issue event, delete this function.
 	return nil
 }
@@ -56,7 +56,7 @@ func (bot *robot) handlePushEvent(e *sdk.PushEvent, c config.Config, log *logrus
 	return nil
 }
 
-func (bot *robot) handleNoteEvent(e *sdk.NoteEvent, c config.Config, log *logrus.Entry) error {
+func (bot *robot) handleNoteEvent(e *sdk.IssueCommentEvent, c config.Config, log *logrus.Entry) error {
 	// TODO: if it doesn't needd to hand Note event, delete this function.
 	return nil
 }

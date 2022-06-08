@@ -259,7 +259,6 @@ func parseRequest(w http.ResponseWriter, r *http.Request) (eventType string, uui
 		resp(http.StatusInternalServerError, "500 Internal Server Error: Failed to read request body")
 		return
 	}
-
 	payload = v
 	ok = true
 

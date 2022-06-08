@@ -7,7 +7,6 @@ me=$(basename $0)
 pn=$#
 
 repo_name=""
-prefix_of_robot_name="robot-gitee"
 
 underscore_to_hyphen(){
     local name=$1
@@ -21,9 +20,9 @@ log(){
 
 check_robot_name() {
     repo_name=$1
-    local name=""
+    local platform=$2
 
-    name=$(echo "$repo_name" | awk '{print tolower($0)}')
+    local name=$(echo "$repo_name" | awk '{print tolower($0)}')
     if [ "$name" != "$repo_name" ]; then
         log "Info: the robot name($repo_name) includes uppercase characters, and will be changed to $name."
         repo_name=$name
@@ -54,6 +53,7 @@ check_robot_name() {
     fi
 
     name=${repo_name//-/}
+    local prefix_of_robot_name="robot-$platform"
     local prefix=${prefix_of_robot_name//-/}
 
     name=${name#$prefix}
@@ -68,9 +68,9 @@ check_robot_name() {
         return 1
     fi
 
-    local s=${name/gitee/-}
+    local s=${name/$platform/-}
     if [ "$s" != "$name" ]; then
-        log "Error: the robot name can't include reserved word 'gitee'."
+        log "Error: the robot name can't include reserved word '$platform'."
         return 1
     fi
 
@@ -86,8 +86,14 @@ build(){
     local robot_name=$1
     local repo_dir=$2
     local remote_repo=$3
+    local platform=$4
 
-    check_robot_name $robot_name
+    if [ "$platform" != "gitee" -a "$platform" != "github" ]; then
+        log "unsupported platform : $platform"
+        return 1
+    fi
+
+    check_robot_name $robot_name $platform
     robot_name=$repo_name
 
     repo_dir=$repo_dir/$robot_name
@@ -101,7 +107,7 @@ build(){
 
     git clone https://github.com/opensourceways/community-robot-lib.git
 
-    cp -r community-robot-lib/robot-gitee-template/. .
+    cp -r community-robot-lib/robot-${platform}-template/. .
 
     rm -fr community-robot-lib 
 
@@ -128,20 +134,21 @@ build(){
 cmd_help(){
 cat << EOF
 
-Usage: $me robot-name dir-of-robot remote-repository-of-robot.
+Usage: $me platform[gitee/github] robot-name dir-of-robot remote-repository-of-robot.
 
-For Example: $me test . github.com/opensourceways
+For Example: $me gitee test . github.com/opensourceways
 
 The command above will
-generate codes at current dir with robot name of 'robot-gitee-test' and
+generate robot codes for gitee platform at current dir with
+robot name of 'robot-gitee-test' and
 import path of 'github.com/opensourceways/robot-gitee-test'.
 
 EOF
 }
 
-if [ $pn -lt 3 ]; then
+if [ $pn -lt 4 ]; then
     cmd_help
     exit 1
 fi
 
-build $1 $2 $3
+build $1 $2 $3 $4
