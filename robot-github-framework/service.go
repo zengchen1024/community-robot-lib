@@ -25,7 +25,6 @@ type HandlerRegister interface {
 type Robot interface {
 	NewConfig() config.Config
 	RegisterEventHandler(HandlerRegister)
-	RobotName() string
 }
 
 func Run(bot Robot, o options.ServiceOptions) {

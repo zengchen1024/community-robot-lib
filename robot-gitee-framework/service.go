@@ -12,7 +12,7 @@ import (
 	"github.com/opensourceways/community-robot-lib/options"
 )
 
-type HandlerRegitster interface {
+type HandlerRegister interface {
 	RegisterIssueHandler(IssueHandler)
 	RegisterPullRequestHandler(PullRequestHandler)
 	RegisterPushEventHandler(PushEventHandler)
@@ -21,7 +21,7 @@ type HandlerRegitster interface {
 
 type Robot interface {
 	NewConfig() config.Config
-	RegisterEventHandler(HandlerRegitster)
+	RegisterEventHandler(HandlerRegister)
 }
 
 func Run(p Robot, o options.ServiceOptions) {
@@ -54,7 +54,6 @@ func Run(p Robot, o options.ServiceOptions) {
 
 func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	eventType, eventGUID, payload, ok := parseRequest(w, r)
-
 	if !ok {
 		return
 	}
