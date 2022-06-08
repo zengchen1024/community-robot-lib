@@ -7,6 +7,9 @@ const (
 	ActionCreated = "created"
 	ActionReopen  = "reopened"
 	ActionClosed  = "closed"
+
+	PRActionOpened              = "opened"
+	PRActionChangedSourceBranch = "synchronize"
 )
 
 // GetOrgRepo return the owner and name of the repository
