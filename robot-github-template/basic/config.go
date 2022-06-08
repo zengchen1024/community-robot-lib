@@ -20,7 +20,7 @@ func (c *configuration) configFor(org, repo string) *botConfig {
 	if i := config.Find(org, repo, v); i >= 0 {
 		return &items[i]
 	}
-	
+
 	return nil
 }
 
@@ -35,7 +35,7 @@ func (c *configuration) Validate() error {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
