@@ -1,7 +1,6 @@
 package framework
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -20,18 +19,6 @@ func (d *dispatcher) wait() {
 	d.wg.Wait() // Handle remaining requests
 }
 
-func (d *dispatcher) dispatch(eventType string, payload []byte, l *logrus.Entry) error {
-	handle, ok := d.h[eventType]
-	if !ok {
-		return fmt.Errorf("Ignoring unknown event type")
-	}
-
-	d.wg.Add(1)
-	go handle(payload, l)
-
-	return nil
-}
-
 func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	eventType, eventGUID, payload, ok := parseRequest(w, r)
 	if !ok {
@@ -45,8 +32,10 @@ func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 
-	if err := d.dispatch(eventType, payload, l); err != nil {
-		l.WithError(err).Error()
+	if handle, ok := d.h[eventType]; ok {
+		d.wg.Add(1)
+
+		go handle(payload, l)
 	}
 }
 
