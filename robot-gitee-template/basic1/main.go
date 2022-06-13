@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"os"
 
@@ -14,9 +15,8 @@ import (
 )
 
 type options struct {
-	service    liboptions.ServiceOptions
-	gitee      liboptions.GiteeOptions
-	ConfigFile string
+	service liboptions.ServiceOptions
+	gitee   liboptions.GiteeOptions
 }
 
 func (o *options) Validate() error {
@@ -29,8 +29,6 @@ func (o *options) Validate() error {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-
-	fs.StringVar(&o.ConfigFile, "config-file", "", "Path to config file.")
 
 	o.gitee.AddFlags(fs)
 	o.service.AddFlags(fs)
@@ -58,8 +56,8 @@ func main() {
 		return &configuration{}
 	})
 
-	if err := agent.Start(o.ConfigFile); err != nil {
-		logrus.WithError(err).Errorf("start config:%s", o.ConfigFile)
+	if err := agent.Start(o.service.ConfigFile); err != nil {
+		logrus.WithError(err).Errorf("start config:%s", o.service.ConfigFile)
 		return
 	}
 
@@ -67,12 +65,13 @@ func main() {
 
 	c := giteeclient.NewClient(secretAgent.GetTokenGenerator(o.gitee.TokenPath))
 
-	r := newRobot(c, func() *configuration {
+	r := newRobot(c, func() (*configuration, error) {
 		_, cfg := agent.GetConfig()
 		if c, ok := cfg.(*configuration); ok {
-			return c
+			return c, nil
 		}
-		return nil
+
+		return nil, errors.New("can't convert to configuration")
 	})
 
 	s := framework.NewService()
@@ -82,5 +81,5 @@ func main() {
 	s.RegisterNoteEventHandler(r.handleNoteEvent)
 	s.RegisterPushEventHandler(r.handlePushEvent)
 
-	s.Run(o.service)
+	s.Run(o.service.Port, o.service.GracePeriod)
 }

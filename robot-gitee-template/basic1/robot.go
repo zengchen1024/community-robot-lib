@@ -1,9 +1,6 @@
 package main
 
 import (
-	"errors"
-
-	"github.com/opensourceways/community-robot-lib/config"
 	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
 )
@@ -14,21 +11,13 @@ const botName = ""
 type iClient interface {
 }
 
-func newRobot(cli iClient, gc func() *configuration) *robot {
-	return &robot{cli: cli, gc: gc}
+func newRobot(cli iClient, gc func() (*configuration, error)) *robot {
+	return &robot{cli: cli, getConfig: gc}
 }
 
 type robot struct {
-	agent *config.ConfigAgent
-	gc    func() *configuration
-	cli   iClient
-}
-
-func (bot *robot) getConfig() (*configuration, error) {
-	if c := bot.gc(); c != nil {
-		return c, nil
-	}
-	return nil, errors.New("can't convert to configuration")
+	getConfig func() (*configuration, error)
+	cli       iClient
 }
 
 func (bot *robot) handlePREvent(e *sdk.PullRequestEvent, log *logrus.Entry) error {

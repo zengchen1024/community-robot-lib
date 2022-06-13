@@ -3,9 +3,9 @@ package framework
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/opensourceways/community-robot-lib/interrupts"
-	"github.com/opensourceways/community-robot-lib/options"
 )
 
 type Service interface {
@@ -14,7 +14,7 @@ type Service interface {
 	RegisterPushEventHandler(PushEventHandler)
 	RegisterNoteEventHandler(NoteEventHandler)
 
-	Run(options.ServiceOptions)
+	Run(int, time.Duration)
 }
 
 func NewService() Service {
@@ -25,7 +25,7 @@ type service struct {
 	handlers
 }
 
-func (s *service) Run(o options.ServiceOptions) {
+func (s *service) Run(port int, timeout time.Duration) {
 	d := dispatcher{h: s.handlers}
 
 	defer interrupts.WaitForGracefulShutdown()
@@ -38,7 +38,7 @@ func (s *service) Run(o options.ServiceOptions) {
 
 	http.Handle("/gitee-hook", &d)
 
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.Port)}
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(port)}
 
-	interrupts.ListenAndServe(httpServer, o.GracePeriod)
+	interrupts.ListenAndServe(httpServer, timeout)
 }
