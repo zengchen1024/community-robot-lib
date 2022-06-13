@@ -26,7 +26,7 @@ type service struct {
 }
 
 func (s *service) Run(port int, timeout time.Duration) {
-	d := dispatcher{h: s.handlers}
+	d := dispatcher{h: s.handlers.getHandler()}
 
 	defer interrupts.WaitForGracefulShutdown()
 

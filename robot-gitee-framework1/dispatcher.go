@@ -1,11 +1,11 @@
 package framework
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
 
-	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +17,7 @@ const (
 )
 
 type dispatcher struct {
-	h handlers
+	h map[string]func([]byte, *logrus.Entry)
 
 	// Tracks running handlers for graceful shutdown
 	wg sync.WaitGroup
@@ -28,128 +28,15 @@ func (d *dispatcher) wait() {
 }
 
 func (d *dispatcher) dispatch(eventType string, payload []byte, l *logrus.Entry) error {
-	switch eventType {
-	case sdk.EventTypeNote:
-		if d.h.noteEventHandler == nil {
-			return nil
-		}
-
-		e, err := sdk.ConvertToNoteEvent(payload)
-		if err != nil {
-			return err
-		}
-
-		d.wg.Add(1)
-		go d.handleNoteEvent(&e, l)
-
-	case sdk.EventTypeIssue:
-		if d.h.issueHandlers == nil {
-			return nil
-		}
-
-		e, err := sdk.ConvertToIssueEvent(payload)
-		if err != nil {
-			return err
-		}
-
-		d.wg.Add(1)
-		go d.handleIssueEvent(&e, l)
-
-	case sdk.EventTypePR:
-		if d.h.pullRequestHandler == nil {
-			return nil
-		}
-
-		e, err := sdk.ConvertToPREvent(payload)
-		if err != nil {
-			return err
-		}
-
-		d.wg.Add(1)
-		go d.handlePullRequestEvent(&e, l)
-
-	case sdk.EventTypePush:
-		if d.h.pushEventHandler == nil {
-			return nil
-		}
-
-		e, err := sdk.ConvertToPushEvent(payload)
-		if err != nil {
-			return err
-		}
-
-		d.wg.Add(1)
-		go d.handlePushEvent(&e, l)
-
-	default:
-		l.Debug("Ignoring unknown event type")
+	handle, ok := d.h[eventType]
+	if !ok {
+		return fmt.Errorf("Ignoring unknown event type")
 	}
+
+	d.wg.Add(1)
+	go handle(payload, l)
+
 	return nil
-}
-
-func (d *dispatcher) handlePullRequestEvent(e *sdk.PullRequestEvent, l *logrus.Entry) {
-	defer d.wg.Done()
-
-	l = l.WithFields(logrus.Fields{
-		logFieldURL:    e.PullRequest.HtmlUrl,
-		logFieldAction: e.GetActionDesc(),
-	})
-
-	if err := d.h.pullRequestHandler(e, l); err != nil {
-		l.WithError(err).Error()
-	} else {
-		l.Info()
-	}
-}
-
-func (d *dispatcher) handleIssueEvent(e *sdk.IssueEvent, l *logrus.Entry) {
-	defer d.wg.Done()
-
-	l = l.WithFields(logrus.Fields{
-		logFieldURL:    e.Issue.HtmlUrl,
-		logFieldAction: *e.Action,
-	})
-
-	if err := d.h.issueHandlers(e, l); err != nil {
-		l.WithError(err).Error()
-	} else {
-		l.Info()
-	}
-}
-
-func (d *dispatcher) handlePushEvent(e *sdk.PushEvent, l *logrus.Entry) {
-	defer d.wg.Done()
-
-	org, repo := e.GetOrgRepo()
-
-	l = l.WithFields(logrus.Fields{
-		logFieldOrg:  org,
-		logFieldRepo: repo,
-		"ref":        e.Ref,
-		"head":       e.After,
-	})
-
-	if err := d.h.pushEventHandler(e, l); err != nil {
-		l.WithError(err).Error()
-	} else {
-		l.Info()
-	}
-}
-
-func (d *dispatcher) handleNoteEvent(e *sdk.NoteEvent, l *logrus.Entry) {
-	defer d.wg.Done()
-
-	l = l.WithFields(logrus.Fields{
-		"commenter":    e.Comment.User.Login,
-		logFieldURL:    e.Comment.HtmlUrl,
-		logFieldAction: *e.Action,
-	})
-
-	if err := d.h.noteEventHandler(e, l); err != nil {
-		l.WithError(err).Error()
-	} else {
-		l.Info()
-	}
 }
 
 func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
