@@ -25,6 +25,11 @@ func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	handle, ok := d.h[eventType]
+	if !ok {
+		return
+	}
+
 	l := logrus.WithFields(
 		logrus.Fields{
 			"event-type": eventType,
@@ -32,14 +37,17 @@ func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 
-	if handle, ok := d.h[eventType]; ok {
-		d.wg.Add(1)
+	d.wg.Add(1)
 
-		go handle(payload, l)
-	}
+	go handle(payload, l)
 }
 
-func parseRequest(w http.ResponseWriter, r *http.Request) (eventType string, uuid string, payload []byte, ok bool) {
+func parseRequest(w http.ResponseWriter, r *http.Request) (
+	eventType string,
+	uuid string,
+	payload []byte,
+	ok bool,
+) {
 	defer r.Body.Close()
 
 	resp := func(code int, msg string) {
