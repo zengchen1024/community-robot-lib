@@ -1,6 +1,7 @@
 package framework
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -8,25 +9,16 @@ import (
 	"github.com/opensourceways/community-robot-lib/interrupts"
 )
 
-type Service interface {
-	RegisterIssueHandler(IssueHandler)
-	RegisterPullRequestHandler(PullRequestHandler)
-	RegisterPushEventHandler(PushEventHandler)
-	RegisterNoteEventHandler(NoteEventHandler)
+func Run(robot interface{}, port int, timeout time.Duration) error {
+	h := handlers{}
+	h.registerHandler(robot)
 
-	Run(int, time.Duration)
-}
+	hs := h.getHandler()
+	if len(hs) == 0 {
+		return fmt.Errorf("it is not a robot")
+	}
 
-func NewService() Service {
-	return &service{}
-}
-
-type service struct {
-	handlers
-}
-
-func (s *service) Run(port int, timeout time.Duration) {
-	d := dispatcher{h: s.handlers.getHandler()}
+	d := dispatcher{h: hs}
 
 	defer interrupts.WaitForGracefulShutdown()
 
@@ -41,4 +33,6 @@ func (s *service) Run(port int, timeout time.Duration) {
 	httpServer := &http.Server{Addr: ":" + strconv.Itoa(port)}
 
 	interrupts.ListenAndServe(httpServer, timeout)
+
+	return nil
 }

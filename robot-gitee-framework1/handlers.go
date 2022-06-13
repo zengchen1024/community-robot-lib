@@ -12,49 +12,56 @@ const (
 	logFieldAction = "action"
 )
 
-// IssueHandler defines the function contract for a gitee.IssueEvent handler.
-type IssueHandler func(e *sdk.IssueEvent, log *logrus.Entry) error
+// IssueEventHandler defines handler for sdk.IssueEvent.
+type IssueEventHandler interface {
+	HandleIssueEvent(e *sdk.IssueEvent, log *logrus.Entry) error
+}
 
-// PullRequestHandler defines the function contract for a sdk.PullRequestEvent handler.
-type PullRequestHandler func(e *sdk.PullRequestEvent, log *logrus.Entry) error
+// PullRequestHandler defines handler for sdk.PullRequestEvent.
+type PullRequestEventHandler interface {
+	HandlePullRequestEvent(e *sdk.PullRequestEvent, log *logrus.Entry) error
+}
 
-// PushEventHandler defines the function contract for a sdk.PushEvent handler.
-type PushEventHandler func(e *sdk.PushEvent, log *logrus.Entry) error
+// PushEventHandler defines handler for sdk.PushEvent.
+type PushEventHandler interface {
+	HandlePushEvent(e *sdk.PushEvent, log *logrus.Entry) error
+}
 
-// NoteEventHandler defines the function contract for a sdk.NoteEvent handler.
-type NoteEventHandler func(e *sdk.NoteEvent, log *logrus.Entry) error
+// NoteEventHandler defines handler for sdk.NoteEvent.
+type NoteEventHandler interface {
+	HandleNoteEvent(e *sdk.NoteEvent, log *logrus.Entry) error
+}
 
 type handlers struct {
-	pullRequestHandler PullRequestHandler
-	pushEventHandler   PushEventHandler
-	noteEventHandler   NoteEventHandler
-	issueHandler       IssueHandler
+	pullRequestEventHandler PullRequestEventHandler
+	issueEventHandler       IssueEventHandler
+	pushEventHandler        PushEventHandler
+	noteEventHandler        NoteEventHandler
 }
 
-// RegisterIssueHandler registers a plugin's gitee.IssueEvent handler.
-func (h *handlers) RegisterIssueHandler(fn IssueHandler) {
-	h.issueHandler = fn
-}
+// registerHandler registers a robot's each handlers.
+func (h *handlers) registerHandler(robot interface{}) {
+	if v, ok := robot.(IssueEventHandler); ok {
+		h.issueEventHandler = v
+	}
 
-// RegisterPullRequestHandler registers a plugin's gitee.PullRequestEvent handler.
-func (h *handlers) RegisterPullRequestHandler(fn PullRequestHandler) {
-	h.pullRequestHandler = fn
-}
+	if v, ok := robot.(PullRequestEventHandler); ok {
+		h.pullRequestEventHandler = v
+	}
 
-// RegisterPushEventHandler registers a plugin's gitee.PushEvent handler.
-func (h *handlers) RegisterPushEventHandler(fn PushEventHandler) {
-	h.pushEventHandler = fn
-}
+	if v, ok := robot.(PushEventHandler); ok {
+		h.pushEventHandler = v
+	}
 
-// RegisterNoteEventHandler registers a plugin's gitee.NoteEvent handler.
-func (h *handlers) RegisterNoteEventHandler(fn NoteEventHandler) {
-	h.noteEventHandler = fn
+	if v, ok := robot.(NoteEventHandler); ok {
+		h.noteEventHandler = v
+	}
 }
 
 func (h *handlers) getHandler() (r map[string]func([]byte, *logrus.Entry)) {
 	r = make(map[string]func([]byte, *logrus.Entry))
 
-	if h.issueHandler != nil {
+	if h.issueEventHandler != nil {
 		r[sdk.EventTypeIssue] = h.handleIssueEvent
 	}
 
@@ -66,7 +73,7 @@ func (h *handlers) getHandler() (r map[string]func([]byte, *logrus.Entry)) {
 		r[sdk.EventTypePush] = h.handlePushEvent
 	}
 
-	if h.pullRequestHandler != nil {
+	if h.pullRequestEventHandler != nil {
 		r[sdk.EventTypePR] = h.handlePullRequestEvent
 	}
 
@@ -86,7 +93,7 @@ func (h *handlers) handlePullRequestEvent(payload []byte, l *logrus.Entry) {
 		logFieldAction: e.GetActionDesc(),
 	})
 
-	if err := h.pullRequestHandler(&e, l); err != nil {
+	if err := h.pullRequestEventHandler.HandlePullRequestEvent(&e, l); err != nil {
 		l.Error(err.Error())
 	} else {
 		l.Info()
@@ -106,7 +113,7 @@ func (h *handlers) handleIssueEvent(payload []byte, l *logrus.Entry) {
 		logFieldAction: *e.Action,
 	})
 
-	if err := h.issueHandler(&e, l); err != nil {
+	if err := h.issueEventHandler.HandleIssueEvent(&e, l); err != nil {
 		l.Error(err.Error())
 	} else {
 		l.Info()
@@ -130,7 +137,7 @@ func (h *handlers) handlePushEvent(payload []byte, l *logrus.Entry) {
 		"head":       e.After,
 	})
 
-	if err := h.pushEventHandler(&e, l); err != nil {
+	if err := h.pushEventHandler.HandlePushEvent(&e, l); err != nil {
 		l.Error(err.Error())
 	} else {
 		l.Info()
@@ -151,7 +158,7 @@ func (h *handlers) handleNoteEvent(payload []byte, l *logrus.Entry) {
 		logFieldAction: *e.Action,
 	})
 
-	if err := h.noteEventHandler(&e, l); err != nil {
+	if err := h.noteEventHandler.HandleNoteEvent(&e, l); err != nil {
 		l.Error(err.Error())
 	} else {
 		l.Info()

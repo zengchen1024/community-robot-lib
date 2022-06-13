@@ -74,12 +74,5 @@ func main() {
 		return nil, errors.New("can't convert to configuration")
 	})
 
-	s := framework.NewService()
-
-	s.RegisterIssueHandler(r.handleIssueEvent)
-	s.RegisterPullRequestHandler(r.handlePREvent)
-	s.RegisterNoteEventHandler(r.handleNoteEvent)
-	s.RegisterPushEventHandler(r.handlePushEvent)
-
-	s.Run(o.service.Port, o.service.GracePeriod)
+	framework.Run(r, o.service.Port, o.service.GracePeriod)
 }
