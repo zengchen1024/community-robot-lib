@@ -5,6 +5,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	logFieldOrg    = "org"
+	logFieldRepo   = "repo"
+	logFieldURL    = "url"
+	logFieldAction = "action"
+)
+
 // IssueHandler defines the function contract for a gitee.IssueEvent handler.
 type IssueHandler func(e *sdk.IssueEvent, log *logrus.Entry) error
 
@@ -44,23 +51,23 @@ func (h *handlers) RegisterNoteEventHandler(fn NoteEventHandler) {
 	h.noteEventHandler = fn
 }
 
-func (h *handlers) getHandler() (r map[string]func(payload []byte, l *logrus.Entry)) {
-	r = make(map[string]func(payload []byte, l *logrus.Entry))
-
-	if h.noteEventHandler != nil {
-		r[sdk.EventTypeNote] = h.handleNoteEvent
-	}
+func (h *handlers) getHandler() (r map[string]func([]byte, *logrus.Entry)) {
+	r = make(map[string]func([]byte, *logrus.Entry))
 
 	if h.issueHandler != nil {
 		r[sdk.EventTypeIssue] = h.handleIssueEvent
 	}
 
-	if h.pullRequestHandler != nil {
-		r[sdk.EventTypePR] = h.handlePullRequestEvent
+	if h.noteEventHandler != nil {
+		r[sdk.EventTypeNote] = h.handleNoteEvent
 	}
 
-	if h.pushEventHandler == nil {
+	if h.pushEventHandler != nil {
 		r[sdk.EventTypePush] = h.handlePushEvent
+	}
+
+	if h.pullRequestHandler != nil {
+		r[sdk.EventTypePR] = h.handlePullRequestEvent
 	}
 
 	return

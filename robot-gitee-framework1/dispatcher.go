@@ -9,13 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	logFieldOrg    = "org"
-	logFieldRepo   = "repo"
-	logFieldURL    = "url"
-	logFieldAction = "action"
-)
-
 type dispatcher struct {
 	h map[string]func([]byte, *logrus.Entry)
 
