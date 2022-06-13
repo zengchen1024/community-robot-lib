@@ -33,23 +33,23 @@ class Handlers(object):
         self.push_event_handler = None
         self.note_event_handler = None
 
-    def register_handler(self, robot) -> None:
+    def register_handler(self, robot: object) -> None:
         d := dict()
 
         if isinstance(robot, PullRequestEventHandler):
-            self.pull_request_handler = handler
+            self.pull_request_handler = robot
             d[""] = self.handle_pull_request_event
 
         if isinstance(robot, IssueEventHandler):
-            self.issue_event_handler = handler
+            self.issue_event_handler = robot
             d[""] = self.handle_issue_event
 
         if isinstance(robot, PushEventHandler):
-            self.push_event_handler = handler
+            self.push_event_handler = robot
             d[""] = self.handle_push_event
 
         if isinstance(robot, NoteEventHandler)
-            self.note_event_handler = handler
+            self.note_event_handler = robot
             d[""]= self.handle_note_event
 
         self._handlers = d
