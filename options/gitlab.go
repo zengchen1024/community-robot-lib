@@ -6,9 +6,7 @@ import (
 
 // GitLabOptions holds options for interacting with GitLab.
 type GitLabOptions struct {
-	TokenPath     string
-	RepoCacheDir  string
-	CacheRepoOnPV bool
+	TokenPath string
 }
 
 // NewGitLabOptions creates a GitLabOptions with default values.
@@ -35,12 +33,9 @@ func (o *GitLabOptions) addFlags(defaultGitlabTokenPath string, fs *flag.FlagSet
 		defaultGitlabTokenPath,
 		"Path to the file containing the GitLab OAuth secret.",
 	)
-	fs.StringVar(&o.RepoCacheDir, "repo-cache-dir", "", "Path to which clone repo.")
-	fs.BoolVar(&o.CacheRepoOnPV, "cache-repo-on-pv", false, "Specify whether to cache repo on persistent volume.")
 }
 
 // Validate validates Gitlab options.
 func (o GitLabOptions) Validate() error {
 	return nil
 }
-

@@ -2,8 +2,9 @@ package gitlabclient
 
 import (
 	"encoding/json"
-	"github.com/xanzy/go-gitlab"
 	"strings"
+
+	"github.com/xanzy/go-gitlab"
 )
 
 const (

@@ -7,7 +7,7 @@ type Client interface {
 	GetMergeRequest(projectID interface{}, mrID int) (gitlab.MergeRequest, error)
 	ListCollaborators(projectID interface{}) ([]*gitlab.ProjectMember, error)
 	IsCollaborator(projectID interface{}, loginID int) (bool, error)
-	AddProjectMember(projectID interface{}, loginID interface{}) error
+	AddProjectMember(projectID interface{}, loginID interface{}, accessLevel int) error
 	RemoveProjectMember(projectID interface{}, loginID int) error
 	IsMember(groupID interface{}, userID int) (bool, error)
 	GetMergeRequestChanges(projectID interface{}, mrID int) ([]string, error)
@@ -31,7 +31,7 @@ type Client interface {
 	GetGroups() ([]*gitlab.Group, error)
 	GetProjects(gid interface{}) ([]*gitlab.Project, error)
 	GetProject(projectID interface{}) (*gitlab.Project, error)
-	CreateProject(opts gitlab.CreateProjectOptions) error
+	CreateProject(opts gitlab.CreateProjectOptions) (*gitlab.Project, error)
 	UpdateProject(projectID interface{}, opts gitlab.EditProjectOptions) error
 	AddProjectLabel(projectID interface{}, label, color string) error
 	UpdateProjectLabel(projectID interface{}, oldLabel, label, color string) error
@@ -56,9 +56,12 @@ type Client interface {
 	SetProtectionBranch(projectID interface{}, branch string) error
 	UnProtectBranch(projectID interface{}, branch string) error
 	CreateFile(projectID interface{}, file string, opts gitlab.CreateFileOptions) error
-	GetPathContent(projectID interface{}, file, filePath string) (*gitlab.File, error)
+	GetPathContent(projectID interface{}, file, branch string) (*gitlab.File, error)
 	GetDirectoryTree(projectID interface{}, opts gitlab.ListTreeOptions) ([]*gitlab.TreeNode, error)
 	GetUserPermissionOfProject(projectID interface{}, userID int) (bool, error)
 	GetMergeRequestLabelChanges(projectID interface{}, mrID int) ([]*gitlab.LabelEvent, error)
-	CreateProjectLabel(pid interface{}, label, color string) error
+	CreateProjectLabel(projectID interface{}, label, color string) error
+	GetSingleUser(name string) int
+	TransferProjectNameSpace(projectID interface{}, newNameSpace string) error
+	PatchFile(projectID interface{}, filePath, content, branch, message string) error
 }

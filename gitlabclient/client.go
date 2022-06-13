@@ -2,8 +2,9 @@ package gitlabclient
 
 import (
 	"fmt"
-	"github.com/xanzy/go-gitlab"
 	"strings"
+
+	"github.com/xanzy/go-gitlab"
 )
 
 var _ Client = (*client)(nil)
@@ -67,8 +68,9 @@ func (cli *client) IsCollaborator(pid interface{}, userID int) (bool, error) {
 	return true, nil
 }
 
-func (cli *client) AddProjectMember(pid interface{}, userID interface{}) error {
-	opts := &gitlab.AddProjectMemberOptions{UserID: userID}
+func (cli *client) AddProjectMember(pid interface{}, userID interface{}, accessLevel int) error {
+	ac := gitlab.AccessLevelValue(accessLevel)
+	opts := &gitlab.AddProjectMemberOptions{UserID: userID, AccessLevel: &ac}
 	_, _, err := cli.ac.ProjectMembers.AddProjectMember(pid, opts)
 	if err != nil {
 		return err
@@ -395,14 +397,14 @@ func (cli *client) GetProject(pid interface{}) (*gitlab.Project, error) {
 	return prj, nil
 }
 
-func (cli *client) CreateProject(opts gitlab.CreateProjectOptions) error {
-	_, _, err := cli.ac.Projects.CreateProject(&opts)
+func (cli *client) CreateProject(opts gitlab.CreateProjectOptions) (*gitlab.Project, error) {
+	p, _, err := cli.ac.Projects.CreateProject(&opts)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return p, nil
 }
 
 func (cli *client) UpdateProject(pid interface{}, opts gitlab.EditProjectOptions) error {
@@ -681,8 +683,8 @@ func (cli *client) CreateFile(pid interface{}, file string, opts gitlab.CreateFi
 	return nil
 }
 
-func (cli *client) GetPathContent(pid interface{}, file, filePath string) (*gitlab.File, error) {
-	fileInfo, _, err := cli.ac.RepositoryFiles.GetFile(pid, file, &gitlab.GetFileOptions{Ref: &filePath})
+func (cli *client) GetPathContent(pid interface{}, file, branch string) (*gitlab.File, error) {
+	fileInfo, _, err := cli.ac.RepositoryFiles.GetFile(pid, file, &gitlab.GetFileOptions{Ref: &branch})
 	if err != nil {
 		return fileInfo, err
 	}
@@ -721,10 +723,6 @@ func (cli *client) GetUserPermissionOfProject(pid interface{}, userID int) (bool
 	}
 
 	for _, m := range members {
-		if m.ID != userID {
-			return false, nil
-		}
-
 		if m.ID == userID {
 			if m.AccessLevel == 30 || m.AccessLevel == 40 || m.AccessLevel == 50 {
 				return true, nil
@@ -766,6 +764,53 @@ func (cli *client) GetMergeRequestLabelChanges(pid interface{}, mrID int) ([]*gi
 	}
 
 	return labelEvents, nil
+}
+
+func (cli *client) GetSingleUser(name string) int {
+	var users []*gitlab.User
+	page := 1
+	for {
+		ls := gitlab.ListOptions{Page: page, PerPage: 100}
+		es, _, err := cli.ac.Users.ListUsers(&gitlab.ListUsersOptions{ListOptions: ls})
+
+		if err != nil {
+			return 0
+		}
+
+		if len(es) == 0 {
+			break
+		}
+
+		users = append(users, es...)
+		page++
+	}
+
+	for _, u := range users {
+		if name == u.Username {
+			return u.ID
+		}
+	}
+
+	return 0
+}
+
+func (cli *client) TransferProjectNameSpace(pid interface{}, newNameSpace string) error {
+	_, _, err := cli.ac.Projects.TransferProject(pid, &gitlab.TransferProjectOptions{Namespace: newNameSpace})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cli *client) PatchFile(pid interface{}, filePath, content, branch, message string) error {
+	opt := &gitlab.UpdateFileOptions{Content: &content, Branch: &branch, CommitMessage: &message}
+	_, _, err := cli.ac.RepositoryFiles.UpdateFile(pid, filePath, opt)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func GetMROrgAndRepo(e *gitlab.MergeEvent) (org, repo string) {
