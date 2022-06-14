@@ -1,23 +1,10 @@
-from abc import ABC, abstratmethod
+def run(robot: object, port: int, timeout: int) -> None:
+    h = Handlers()
+    h.register_handler(robot)
 
-class Service(ABC):
-    @abstratmethod
-    def register_handler(self, robot) -> None:
-        pass
+    hs = self.handlers.get_handlers()
+    if len(hs) == 0:
+        raise Exception("it is not a robot")
 
-    @abstratmethod
-    def run(self, port: int, timeout: int) -> None:
-        pass
-
-
-class _Service(Service):
-    def __init__(self):
-        self._handlers := Handlers()
-
-    def register_handler(self, robot) -> None:
-        self._handlers.register_handler(robot)
-
-    def run(self, port: int, timeout: int) -> None:
-        d = Dispatcher(('', port), self.handlers.get_handlers())
-
-        d.run()
+    d = Dispatcher(('', port), hs)
+    d.run()
