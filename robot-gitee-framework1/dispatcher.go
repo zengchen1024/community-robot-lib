@@ -39,7 +39,11 @@ func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	d.wg.Add(1)
 
-	go handle(payload, l)
+	go func() {
+		handle(payload, l)
+
+		d.wg.Done()
+	}()
 }
 
 func parseRequest(w http.ResponseWriter, r *http.Request) (
