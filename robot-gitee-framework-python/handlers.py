@@ -1,25 +1,25 @@
-from abc import ABC, abstratmethod
+from abc import ABC, abstractmethod
 
 class NoteEventHandler(ABC):
-    @abstratmethod
+    @abstractmethod
     def handle_note_event(self, event) -> None:
         pass
 
 
 class PullRequestEventHandler(ABC):
-    @abstratmethod
+    @abstractmethod
     def handle_pull_request_event(self, event) -> None:
         pass
 
 
 class IssueEventHandler(ABC):
-    @abstratmethod
+    @abstractmethod
     def handle_issue_event(self, event) -> None:
         pass
 
 
 class PushEventHandler(ABC):
-    @abstratmethod
+    @abstractmethod
     def handle_push_event(self, event) -> None:
         pass
 
