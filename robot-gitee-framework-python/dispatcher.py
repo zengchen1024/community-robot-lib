@@ -45,6 +45,7 @@ class Webhook(BaseHTTPRequestHandler):
 class Dispatcher(HTTPServer):
     def __init__(self, server_address, handlers):
         self.handlers = handlers
+        self.wg = WaitGroup()
 
         super().__init__(server_address, Webhook)
 
@@ -56,11 +57,14 @@ class Dispatcher(HTTPServer):
         t = threading.Thread(target=self.serve_forever)
         t.daemon = True
         t.start()
+        # wait the web server to exit
         t.join()
 
-        print("exit thread")
+        self.server_close()
+        print("web server exits")
 
-        # wait event handler threads to exit
+        # wait threads of event handler to exit
+        self.wg.wait()
 
     def exit(self, num, frame):
         print("shutdown the server")
@@ -73,4 +77,43 @@ class Dispatcher(HTTPServer):
         if event_type not in self.handlers:
             return
 
-        self.handlers[event_type](payload)
+        self.wg.add()
+
+        t = threading.Thread(target=self.do, args=(self.handlers[event_type], payload))
+        t.start()
+
+    def do(self, handle, payload):
+        try:
+            handle(payload)
+        except Exception as e:
+            print(e)
+        finally:
+            self.wg.done()
+
+
+class WaitGroup(object):
+    """WaitGroup is like Go sync.WaitGroup.
+
+    Without all the useful corner cases.
+    """
+    def __init__(self):
+        self.count = 0
+        self.cv = threading.Condition()
+
+    def add(self, n=1):
+        self.cv.acquire()
+        self.count += n
+        self.cv.release()
+
+    def done(self):
+        self.cv.acquire()
+        self.count -= 1
+        if self.count <= 0:
+            self.cv.notify_all()
+        self.cv.release()
+
+    def wait(self):
+        self.cv.acquire()
+        while self.count > 0:
+            self.cv.wait()
+        self.cv.release()
