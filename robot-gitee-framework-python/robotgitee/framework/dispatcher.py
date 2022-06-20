@@ -2,8 +2,10 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import signal
 import threading
 
+from robotgitee import logutil
 
-class Webhook(BaseHTTPRequestHandler):
+
+class _Webhook(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path != "/gitee-hook":
             self.send_error(400, "Bad Request: unknown path")
@@ -13,24 +15,26 @@ class Webhook(BaseHTTPRequestHandler):
             self.send_error(400, "Bad Request: unknown User-Agent Header")
             return
 
-        event_type = self.headers.get("X-Gitee-Event"); 
+        event_type = self.headers.get("X-Gitee-Event")
         if event_type == "":
             self.send_error(400, "Bad Request: Missing X-Gitee-Event Header")
             return
 
         uuid = self.headers.get("X-Gitee-Timestamp")
         if uuid == "":
-            self.send_error(400, "Bad Request: Missing X-Gitee-Timestamp Header")
+            self.send_error(
+                400, "Bad Request: Missing X-Gitee-Timestamp Header",
+            )
+
             return
 
         data = self.rfile.read(int(self.headers.get("content-length")))
 
-        print(event_type)
-        print(uuid)
-        print(data)
-        print(self.server.handlers)
+        log = logutil.new_logutil()
 
-        self.server.dispatch(event_type, uuid, data)
+        log.field("event_type", event_type).field("uuid", uuid)
+
+        self.server.dispatch(event_type, uuid, data, log)
 
         self.send_response_only(201, "done")
 
@@ -42,15 +46,15 @@ class Webhook(BaseHTTPRequestHandler):
         self.send_response_only(200, "done")
 
 
-class Dispatcher(HTTPServer):
+class _Dispatcher(HTTPServer):
     def __init__(self, server_address, handlers):
         self.handlers = handlers
-        self.wg = WaitGroup()
+        self.wg = _WaitGroup()
 
-        super().__init__(server_address, Webhook)
+        super().__init__(server_address, _Webhook)
 
     def run(self):
-        print("start server, listen on: %s:%d" % self.server_address)
+        logutil.info("start server, listen on: %s:%d" % self.server_address)
 
         signal.signal(signal.SIGINT, self.exit)
 
@@ -61,38 +65,45 @@ class Dispatcher(HTTPServer):
         t.join()
 
         self.server_close()
-        print("web server exits")
+        logutil.info("web server exits")
 
         # wait threads of event handler to exit
         self.wg.wait()
 
     def exit(self, num, frame):
-        print("shutdown the server")
-        print(num)
-        print(frame)
-        self.shutdown()
-        print("server is shutdown")
+        log = logutil.new_logutil()
+        log.field("num", num).field("frame", frame).info(
+            "recieve signal to shutdown the server",
+        )
 
-    def dispatch(self, event_type, uuid, payload):
+        self.shutdown()
+
+        log.info("server is shutdown")
+
+    def dispatch(self, event_type, uuid, payload, log):
         if event_type not in self.handlers:
             return
 
         self.wg.add()
 
-        t = threading.Thread(target=self.do, args=(self.handlers[event_type], payload))
+        t = threading.Thread(
+            target=self.do,
+            args=(self.handlers[event_type], payload, log),
+        )
+
         t.start()
 
-    def do(self, handle, payload):
+    def do(self, handle, payload, log):
         try:
-            handle(payload)
+            handle(payload, log)
         except Exception as e:
-            print(e)
+            log.error(e)
         finally:
             self.wg.done()
 
 
-class WaitGroup(object):
-    """WaitGroup is like Go sync.WaitGroup.
+class _WaitGroup(object):
+    """_WaitGroup is like Go sync.WaitGroup.
 
     Without all the useful corner cases.
     """

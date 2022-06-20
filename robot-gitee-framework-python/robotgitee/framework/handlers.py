@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class NoteEventHandler(ABC):
     @abstractmethod
     def handle_note_event(self, event) -> None:
@@ -24,7 +25,7 @@ class PushEventHandler(ABC):
         pass
 
 
-class Handlers(object):
+class _Handlers(object):
     def __init__(self):
         self.pull_request_handler = None
         self.issue_event_handler = None
@@ -41,23 +42,23 @@ class Handlers(object):
         if isinstance(robot, PushEventHandler):
             self.push_event_handler = robot
 
-        if isinstance(robot, NoteEventHandler)
+        if isinstance(robot, NoteEventHandler):
             self.note_event_handler = robot
 
     def get_handlers(self) -> dict:
-        d := dict()
+        d = dict()
 
-        if self.pull_request_handler != None:
+        if self.pull_request_handler is not None:
             d[""] = self.handle_pull_request_event
 
-        if self.issue_event_handler != None:
+        if self.issue_event_handler is not None:
             d[""] = self.handle_issue_event
 
-        if self.push_event_handler != None:
+        if self.push_event_handler is not None:
             d[""] = self.handle_push_event
 
-        if self.note_event_handler != None:
-            d[""]= self.handle_note_event
+        if self.note_event_handler is not None:
+            d[""] = self.handle_note_event
 
         return d
 
