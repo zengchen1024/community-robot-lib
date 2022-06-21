@@ -5,6 +5,8 @@
 *.so
 *.dylib
 /bazel-*
+__pycache__
+*.egg-info
 
 # Test binary, built with `go test -c`
 *.test
