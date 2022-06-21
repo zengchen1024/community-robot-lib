@@ -7,4 +7,5 @@ from robotgitee.logutil.log import info
 
 from robotgitee.logutil.log import LogUtil
 
+
 __all__ = ["init_logger", "new_logutil", "error", "info", "LogUtil"]
