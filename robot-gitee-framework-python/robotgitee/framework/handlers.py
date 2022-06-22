@@ -80,7 +80,7 @@ class _Handlers(object):
             self.pull_request_handler.handle_pull_request_event(event, log)
 
         except Exception as e:
-            log.error(e)
+            log.error(str(e))
 
     def handle_issue_event(self, payload, log: LogUtil) -> None:
         try:
@@ -92,7 +92,7 @@ class _Handlers(object):
             self.issue_event_handler.handle_issue_event(event, log)
 
         except Exception as e:
-            log.error(e)
+            log.error(str(e))
 
     def handle_push_event(self, payload, log: LogUtil) -> None:
         try:
@@ -107,7 +107,7 @@ class _Handlers(object):
             self.push_event_handler.handle_push_event(event, log)
 
         except Exception as e:
-            log.error(e)
+            log.error(str(e))
 
     def handle_note_event(self, payload, log: LogUtil) -> None:
         try:
@@ -120,4 +120,4 @@ class _Handlers(object):
             self.note_event_handler.handle_note_event(event, log)
 
         except Exception as e:
-            log.error(e)
+            log.error(str(e))
