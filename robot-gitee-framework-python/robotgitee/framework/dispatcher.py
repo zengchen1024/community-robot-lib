@@ -7,7 +7,7 @@ from robotgitee import logutil
 
 class _Webhook(BaseHTTPRequestHandler):
     def do_POST(self):
-        if self.path != "/gitee-hook":
+        if not self.path.startswith("/gitee-hook"):
             self.send_error(400, "Bad Request: unknown path")
             return
 
@@ -72,7 +72,7 @@ class _Dispatcher(HTTPServer):
 
     def exit(self, num, frame):
         log = logutil.new_logutil()
-        log.field("num", num).field("frame", frame).info(
+        log.field("num", num).field("frame", str(frame)).info(
             "recieve signal to shutdown the server",
         )
 
@@ -97,7 +97,7 @@ class _Dispatcher(HTTPServer):
         try:
             handle(payload, log)
         except Exception as e:
-            log.error(e)
+            log.error(str(e))
         finally:
             self.wg.done()
 

@@ -76,13 +76,13 @@ def new_logutil():
 
     return LogUtil(_logger)
 
-def info(self, msg, *args, **kwargs):
+def info(msg, *args, **kwargs):
     global _logger
 
     if _logger:
         _logger.info(msg, *args, **kwargs)
 
-def error(self, msg, *args, **kwargs):
+def error(msg, *args, **kwargs):
     global _logger
 
     if _logger:
