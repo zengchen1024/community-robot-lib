@@ -18,20 +18,25 @@ class ListPullRequestOpt:
 
 class Client(ABC):
     @abstractmethod
-    def create_pull_request(self, org: str, repo: str, title: str, body, head, base: str) -> gitee.PullRequest:
+    def create_pull_request(self, org: str, repo: str, title: str,
+                            body, head, base: str) -> gitee.PullRequest:
         pass
 
     @abstractmethod
-    def get_pull_requests(self, org: str, repo: str, opts: ListPullRequestOpt = None) -> List[gitee.PullRequest]:
+    def get_pull_requests(self, org: str, repo: str,
+                          opts: ListPullRequestOpt = None,
+                          ) -> List[gitee.PullRequest]:
         pass
 
     @abstractmethod
     def update_pull_request(self, org: str, repo: str, number: int,
-                            body: gitee.PullRequestUpdateParam) -> gitee.PullRequest:
+                            body: gitee.PullRequestUpdateParam,
+                            ) -> gitee.PullRequest:
         pass
 
     @abstractmethod
-    def list_collaborators(self, org: str, repo: str) -> List[gitee.ProjectMember]:
+    def list_collaborators(self, org: str,
+                           repo: str) -> List[gitee.ProjectMember]:
         pass
 
     @abstractmethod
@@ -47,7 +52,8 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def add_repo_member(self, org: str, repo: str, username: str, permission: str):
+    def add_repo_member(self, org: str, repo: str,
+                        username: str, permission: str):
         pass
 
     @abstractmethod
@@ -55,19 +61,23 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def get_pull_request_changes(self, org: str, repo: str, number: int) -> List[gitee.PullRequestFiles]:
+    def get_pull_request_changes(self, org: str, repo: str,
+                                 number: int) -> List[gitee.PullRequestFiles]:
         pass
 
     @abstractmethod
-    def get_pr_labels(self, org: str, repo: str, number: int) -> List[gitee.Label]:
+    def get_pr_labels(self, org: str, repo: str,
+                      number: int) -> List[gitee.Label]:
         pass
 
     @abstractmethod
-    def list_pr_comments(self, org: str, repo: str, number: int) -> List[gitee.PullRequestComments]:
+    def list_pr_comments(self, org: str, repo: str,
+                         number: int) -> List[gitee.PullRequestComments]:
         pass
 
     @abstractmethod
-    def list_pr_issues(self, org: str, repo: str, number: int) -> List[gitee.Issue]:
+    def list_pr_issues(self, org: str, repo: str,
+                       number: int) -> List[gitee.Issue]:
         pass
 
     @abstractmethod
@@ -75,11 +85,13 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def create_pr_comment(self, org: str, repo: str, number: int, comment: str):
+    def create_pr_comment(self, org: str, repo: str, number: int,
+                          comment: str):
         pass
 
     @abstractmethod
-    def update_pr_comment(self, org: str, repo: str, comment_id: int, comment: str):
+    def update_pr_comment(self, org: str, repo: str, comment_id: int,
+                          comment: str):
         pass
 
     @abstractmethod
@@ -87,7 +99,8 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def add_multi_pr_label(self, org: str, repo: str, number: int, labels: List[str]):
+    def add_multi_pr_label(self, org: str, repo: str, number: int,
+                           labels: List[str]):
         pass
 
     @abstractmethod
@@ -95,15 +108,18 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def remove_pr_labels(self, org: str, repo: str, number: int, labels: List[str]):
+    def remove_pr_labels(self, org: str, repo: str, number: int,
+                         labels: List[str]):
         pass
 
     @abstractmethod
-    def replace_pr_all_labels(self, owner, repo: str, number: int, labels: List[str]):
+    def replace_pr_all_labels(self, owner, repo: str, number: int,
+                              labels: List[str]):
         pass
 
     @abstractmethod
-    def list_pr_operation_logs(self, org: str, repo: str, number: int) -> List[gitee.OperateLog]:
+    def list_pr_operation_logs(self, org: str, repo: str,
+                               number: int) -> List[gitee.OperateLog]:
         pass
 
     @abstractmethod
@@ -119,19 +135,23 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def get_pr_commits(self, org: str, repo: str, number: int) -> List[gitee.PullRequestCommits]:
+    def get_pr_commits(self, org: str, repo: str,
+                       number: int) -> List[gitee.PullRequestCommits]:
         pass
 
     @abstractmethod
-    def get_pull_request(self, org: str, repo: str, number: int) -> gitee.PullRequest:
+    def get_pull_request(self, org: str, repo: str,
+                         number: int) -> gitee.PullRequest:
         pass
 
     @abstractmethod
-    def get_repo_commit(self, org: str, repo: str, sha: str) -> gitee.RepoCommit:
+    def get_repo_commit(self, org: str, repo: str,
+                        sha: str) -> gitee.RepoCommit:
         pass
 
     @abstractmethod
-    def merge_pr(self, owner, repo: str, number: int, merge_method='merge', title=None, description=None,
+    def merge_pr(self, owner, repo: str, number: int,
+                 merge_method='merge', title=None, description=None,
                  prune_source_branch=False):
         pass
 
@@ -156,7 +176,8 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def set_repo_reviewer(self, org: str, repo: str, reviewer: gitee.SetRepoReviewer):
+    def set_repo_reviewer(self, org: str, repo: str,
+                          reviewer: gitee.SetRepoReviewer):
         pass
 
     @abstractmethod
@@ -168,7 +189,8 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def assign_gitee_issue(self, org: str, repo: str, number: str, username: str):
+    def assign_gitee_issue(self, org: str, repo: str, number: str,
+                           username: str):
         pass
 
     @abstractmethod
@@ -180,19 +202,23 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def create_issue_comment(self, org: str, repo: str, number: str, comment: str):
+    def create_issue_comment(self, org: str, repo: str, number: str,
+                             comment: str):
         pass
 
     @abstractmethod
-    def update_issue_comment(self, org: str, repo: str, comment_id: int, comment: str):
+    def update_issue_comment(self, org: str, repo: str, comment_id: int,
+                             comment: str):
         pass
 
     @abstractmethod
-    def list_issue_comments(self, org: str, repo: str, number: str) -> List[gitee.Note]:
+    def list_issue_comments(self, org: str, repo: str,
+                            number: str) -> List[gitee.Note]:
         pass
 
     @abstractmethod
-    def get_issue_labels(self, org: str, repo: str, number: str) -> List[gitee.Label]:
+    def get_issue_labels(self, org: str, repo: str,
+                         number: str) -> List[gitee.Label]:
         pass
 
     @abstractmethod
@@ -200,7 +226,8 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def remove_issue_labels(self, org: str, repo: str, number: str, labels: List[str]):
+    def remove_issue_labels(self, org: str, repo: str, number: str,
+                            labels: List[str]):
         pass
 
     @abstractmethod
@@ -208,7 +235,8 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def add_multi_issue_label(self, org: str, repo: str, number: str, labels: List[str]):
+    def add_multi_issue_label(self, org: str, repo: str, number: str,
+                              labels: List[str]):
         pass
 
     @abstractmethod
@@ -220,7 +248,8 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def update_issue(self, owner, number: str, param: gitee.IssueUpdateParam) -> gitee.Issue:
+    def update_issue(self, owner, number: str,
+                     param: gitee.IssueUpdateParam) -> gitee.Issue:
         pass
 
     @abstractmethod
@@ -252,15 +281,18 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def create_file(self, org: str, repo: str, branch, path, content, commit_msg: str) -> gitee.CommitContent:
+    def create_file(self, org: str, repo: str, branch, path, content,
+                    commit_msg: str) -> gitee.CommitContent:
         pass
 
     @abstractmethod
-    def get_path_content(self, org: str, repo: str, path, ref: str) -> gitee.Content:
+    def get_path_content(self, org: str, repo: str, path,
+                         ref: str) -> gitee.Content:
         pass
 
     @abstractmethod
-    def get_directory_tree(self, org: str, repo: str, sha: str, recursive: int) -> gitee.Tree:
+    def get_directory_tree(self, org: str, repo: str, sha: str,
+                           recursive: int) -> gitee.Tree:
         pass
 
     @abstractmethod
@@ -268,13 +300,17 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def get_user_permission_of_repo(self, org: str, repo: str, username: str) -> gitee.ProjectMemberPermission:
+    def get_user_permission_of_repo(self, org: str, repo: str,
+                                    username: str,
+                                    ) -> gitee.ProjectMemberPermission:
         pass
 
     @abstractmethod
-    def get_enterprise_member(self, enterprise, username: str) -> gitee.EnterpriseMember:
+    def get_enterprise_member(self, enterprise,
+                              username: str) -> gitee.EnterpriseMember:
         pass
 
     @abstractmethod
-    def create_issue(self, org: str, repo: str, title, body: str) -> gitee.Issue:
+    def create_issue(self, org: str, repo: str, title,
+                     body: str) -> gitee.Issue:
         pass
