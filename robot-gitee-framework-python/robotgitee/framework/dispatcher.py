@@ -36,7 +36,12 @@ class _Webhook(BaseHTTPRequestHandler):
 
         self.server.dispatch(event_type, uuid, data, log)
 
-        self.send_response_only(201, "done")
+        self.send_response(201, "done")
+        self.send_header("content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(
+            bytes("Event received. Have a nice day.", encoding="utf-8"),
+        )
 
     def do_GET(self):
         if self.path != "/":
