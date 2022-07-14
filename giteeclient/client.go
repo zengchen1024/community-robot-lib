@@ -667,6 +667,24 @@ func (c *client) CreateIssue(org, repo, title, body string) (sdk.Issue, error) {
 	return issue, formatErr(err, "create issue")
 }
 
+func (c *client) PatchFile(owner, repo, path, branch, content, sha, message string) error {
+	op := sdk.PutFileParam{
+		Content: content,
+		Sha:     sha,
+		Message: message,
+		Branch:  branch,
+	}
+
+	_, _, err := c.ac.RepositoriesApi.PutV5ReposOwnerRepoContentsPath(context.Background(),
+		owner, repo, path, op)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func formatErr(err error, doWhat string) error {
 	if err == nil {
 		return err

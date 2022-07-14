@@ -81,6 +81,7 @@ type Client interface {
 	GetEnterprisesMember(enterprise, login string) (sdk.EnterpriseMember, error)
 
 	CreateIssue(org, repo, title, body string) (sdk.Issue, error)
+	PatchFile(owner, repo, path, branch, content, sha, message string) error
 }
 
 type ListPullRequestOpt struct {
