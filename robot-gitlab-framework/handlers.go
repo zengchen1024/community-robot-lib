@@ -1,13 +1,21 @@
 package framework
 
 import (
-	"github.com/opensourceways/community-robot-lib/gitlabclient"
+	"encoding/json"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"github.com/xanzy/go-gitlab"
-	"strings"
+
+	"github.com/opensourceways/community-robot-lib/gitlabclient"
 )
 
 const (
+	logFieldOrg    = "org"
+	logFieldRepo   = "repo"
+	logFieldURL    = "url"
+	logFieldAction = "action"
+
 	noteableTypeIssue        = "Issue"
 	noteableTypeMergeRequest = "MergeRequest"
 )
@@ -22,9 +30,9 @@ type IssueCommentHandler interface {
 	HandleIssueCommentEvent(e *gitlab.IssueCommentEvent, log *logrus.Entry) error
 }
 
-// MergeEventHandler defines the handler for a gitlab.MergeEvent.
-type MergeEventHandler interface {
-	HandleMergeEvent(e *gitlab.MergeEvent, log *logrus.Entry) error
+// MergeRequestEventHandler defines the handler for a gitlab.MergeEvent on a merge request.
+type MergeRequestEventHandler interface {
+	HandleMergeRequestEvent(e *gitlab.MergeEvent, log *logrus.Entry) error
 }
 
 // MergeCommentEventHandler defines the handler for a gitlab.MergeCommentEvent.
@@ -38,10 +46,12 @@ type PushEventHandler interface {
 }
 
 type handlers struct {
-	issueEventHandler        IssueEventHandler
-	mergeEventHandler        MergeEventHandler
-	pushEventHandler         PushEventHandler
-	issueCommentHandler      IssueCommentHandler
+	pushEventHandler PushEventHandler
+
+	issueEventHandler   IssueEventHandler
+	issueCommentHandler IssueCommentHandler
+
+	mergeRequestEventHandler MergeRequestEventHandler
 	mergeCommentEventHandler MergeCommentEventHandler
 }
 
@@ -50,8 +60,8 @@ func (h *handlers) registerHandler(robot interface{}) {
 		h.issueEventHandler = v
 	}
 
-	if v, ok := robot.(MergeEventHandler); ok {
-		h.mergeEventHandler = v
+	if v, ok := robot.(MergeRequestEventHandler); ok {
+		h.mergeRequestEventHandler = v
 	}
 
 	if v, ok := robot.(PushEventHandler); ok {
@@ -74,8 +84,8 @@ func (h *handlers) getHandler() (r map[string]func([]byte, *logrus.Entry)) {
 		r[string(gitlab.EventTypeIssue)] = h.handleIssueEvent
 	}
 
-	if h.mergeEventHandler != nil {
-		r[string(gitlab.EventTypeMergeRequest)] = h.handleMergeEvent
+	if h.mergeRequestEventHandler != nil {
+		r[string(gitlab.EventTypeMergeRequest)] = h.handleMergeRequestEvent
 	}
 
 	if h.pushEventHandler != nil {
@@ -94,8 +104,9 @@ func (h *handlers) getHandler() (r map[string]func([]byte, *logrus.Entry)) {
 }
 
 func (h *handlers) handleIssueEvent(payload []byte, l *logrus.Entry) {
-	e, err := gitlabclient.ConvertToIssueEvent(payload)
-	if err != nil {
+	e := new(gitlab.IssueEvent)
+
+	if err := json.Unmarshal(payload, e); err != nil {
 		l.Errorf("convert to issueEvent err: ", err.Error())
 
 		return
@@ -113,9 +124,10 @@ func (h *handlers) handleIssueEvent(payload []byte, l *logrus.Entry) {
 	}
 }
 
-func (h *handlers) handleMergeEvent(payload []byte, l *logrus.Entry) {
-	e, err := gitlabclient.ConvertToMergeEvent(payload)
-	if err != nil {
+func (h *handlers) handleMergeRequestEvent(payload []byte, l *logrus.Entry) {
+	e := new(gitlab.MergeEvent)
+
+	if err := json.Unmarshal(payload, e); err != nil {
 		l.Errorf("convert to mergeEvent err: ", err.Error())
 
 		return
@@ -126,7 +138,7 @@ func (h *handlers) handleMergeEvent(payload []byte, l *logrus.Entry) {
 		logFieldAction: e.ObjectAttributes.Action,
 	})
 
-	if err := h.mergeEventHandler.HandleMergeEvent(e, l); err != nil {
+	if err := h.mergeRequestEventHandler.HandleMergeRequestEvent(e, l); err != nil {
 		l.WithError(err).Error()
 	} else {
 		l.Info()
@@ -134,8 +146,9 @@ func (h *handlers) handleMergeEvent(payload []byte, l *logrus.Entry) {
 }
 
 func (h *handlers) handlePushEvent(payload []byte, l *logrus.Entry) {
-	e, err := gitlabclient.ConvertToPushEvent(payload)
-	if err != nil {
+	e := new(gitlab.PushEvent)
+
+	if err := json.Unmarshal(payload, e); err != nil {
 		l.Errorf("convert to pushEvent err: ", err.Error())
 
 		return
@@ -156,8 +169,9 @@ func (h *handlers) handlePushEvent(payload []byte, l *logrus.Entry) {
 }
 
 func (h *handlers) handleIssueCommentEvent(payload []byte, l *logrus.Entry) {
-	e, err := gitlabclient.ConvertToIssueCommentEvent(payload)
-	if err != nil {
+	e := new(gitlab.IssueCommentEvent)
+
+	if err := json.Unmarshal(payload, e); err != nil {
 		l.Errorf("convert to issueCommentEvent err: ", err.Error())
 
 		return
@@ -177,8 +191,9 @@ func (h *handlers) handleIssueCommentEvent(payload []byte, l *logrus.Entry) {
 }
 
 func (h *handlers) handleMergeCommentEvent(payload []byte, l *logrus.Entry) {
-	e, err := gitlabclient.ConvertToMergeCommentEvent(payload)
-	if err != nil {
+	e := new(gitlab.MergeCommentEvent)
+
+	if err := json.Unmarshal(payload, e); err != nil {
 		l.Errorf("convert to mergeCommentEvent err: ", err.Error())
 
 		return
