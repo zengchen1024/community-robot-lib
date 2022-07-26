@@ -2,10 +2,11 @@ package framework
 
 import (
 	"fmt"
-	"github.com/opensourceways/community-robot-lib/interrupts"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/opensourceways/community-robot-lib/interrupts"
 )
 
 func Run(robot interface{}, port int, timeout time.Duration) error {
@@ -22,7 +23,7 @@ func Run(robot interface{}, port int, timeout time.Duration) error {
 	defer interrupts.WaitForGracefulShutdown()
 
 	interrupts.OnInterrupt(func() {
-		d.Wait()
+		d.wait()
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})

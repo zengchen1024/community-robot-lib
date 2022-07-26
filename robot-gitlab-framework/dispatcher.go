@@ -2,18 +2,12 @@ package framework
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
-	"github.com/xanzy/go-gitlab"
 	"io/ioutil"
 	"net/http"
 	"sync"
-)
 
-const (
-	logFieldOrg    = "org"
-	logFieldRepo   = "repo"
-	logFieldURL    = "url"
-	logFieldAction = "action"
+	"github.com/sirupsen/logrus"
+	"github.com/xanzy/go-gitlab"
 )
 
 type dispatcher struct {
@@ -23,37 +17,8 @@ type dispatcher struct {
 	wg sync.WaitGroup
 }
 
-func (d *dispatcher) Wait() {
+func (d *dispatcher) wait() {
 	d.wg.Wait() // Handle remaining requests
-}
-
-func convertEventType(eventType string, payload []byte) string {
-	type noteEvent struct {
-		ObjectKind       string `json:"object_kind"`
-		ObjectAttributes struct {
-			NoteableType string `json:"noteable_type"`
-		} `json:"object_attributes"`
-	}
-	note := &noteEvent{}
-	if eventType == string(gitlab.EventTypeNote) {
-		err := json.Unmarshal(payload, note)
-		if err != nil {
-			return ""
-		}
-
-		if note.ObjectKind != string(gitlab.NoteEventTargetType) {
-			return ""
-		}
-
-		if note.ObjectAttributes.NoteableType == "MergeRequest" {
-			return noteableTypeMergeRequest
-		}
-		if note.ObjectAttributes.NoteableType == "Issue" {
-			return noteableTypeIssue
-		}
-	}
-
-	return eventType
 }
 
 func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -61,8 +26,6 @@ func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-
-	eventType = convertEventType(eventType, payload)
 
 	handle, ok := d.h[eventType]
 	if !ok {
@@ -85,7 +48,12 @@ func (d *dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
-func parseRequest(w http.ResponseWriter, r *http.Request) (eventType string, uuid string, payload []byte, ok bool) {
+func parseRequest(w http.ResponseWriter, r *http.Request) (
+	eventType string,
+	uuid string,
+	payload []byte,
+	ok bool,
+) {
 	defer r.Body.Close()
 
 	resp := func(code int, msg string) {
@@ -116,5 +84,39 @@ func parseRequest(w http.ResponseWriter, r *http.Request) (eventType string, uui
 	payload = v
 	ok = true
 
+	if eventType == string(gitlab.EventTypeNote) {
+		eventType = convertNoteEventType(eventType, payload)
+	}
+
 	return
+}
+
+func convertNoteEventType(eventType string, payload []byte) string {
+	var note struct {
+		ObjectKind       string `json:"object_kind"`
+		ObjectAttributes struct {
+			NoteableType string `json:"noteable_type"`
+		} `json:"object_attributes"`
+	}
+
+	if err := json.Unmarshal(payload, &note); err != nil {
+		return ""
+	}
+
+	if note.ObjectKind != string(gitlab.NoteEventTargetType) {
+		return ""
+	}
+
+	t := note.ObjectAttributes.NoteableType
+
+	switch t {
+	case noteableTypeMergeRequest:
+		return t
+
+	case noteableTypeIssue:
+		return t
+
+	default:
+		return ""
+	}
 }
