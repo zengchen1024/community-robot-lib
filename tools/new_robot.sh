@@ -88,7 +88,7 @@ build(){
     local remote_repo=$3
     local platform=$4
 
-    if [ "$platform" != "gitee" -a "$platform" != "github" ]; then
+    if [ "$platform" != "gitee" -a "$platform" != "github" -a "$platform" != "gitlab" ]; then
         log "unsupported platform : $platform"
         return 1
     fi
@@ -134,7 +134,7 @@ build(){
 cmd_help(){
 cat << EOF
 
-Usage: $me platform[gitee/github] robot-name dir-of-robot remote-repository-of-robot.
+Usage: $me platform[gitee/github/gitlab] robot-name dir-of-robot remote-repository-of-robot.
 
 For Example: $me gitee test . github.com/opensourceways
 
