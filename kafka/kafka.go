@@ -141,6 +141,9 @@ func (kMQ *kfkMQ) Subscribe(topics string, h mq.Handler, opts ...mq.SubscribeOpt
 	for _, o := range opts {
 		o(&opt)
 	}
+	if opt.Context == nil {
+		opt.Context = context.Background()
+	}
 
 	c, err := kMQ.saramaClusterClient()
 	if err != nil {
