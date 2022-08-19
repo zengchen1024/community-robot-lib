@@ -83,10 +83,11 @@ check_robot_name() {
 }
 
 build(){
-    local robot_name=$1
-    local repo_dir=$2
-    local remote_repo=$3
-    local platform=$4
+    local platform=$1
+    local robot_name=$2
+    local repo_dir=$3
+    local remote_repo=$4
+
 
     if [ "$platform" != "gitee" -a "$platform" != "github" -a "$platform" != "gitlab" ]; then
         log "unsupported platform : $platform"
