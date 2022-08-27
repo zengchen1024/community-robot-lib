@@ -10,7 +10,6 @@ import (
 )
 
 type HttpClient struct {
-	cli        http.Client
 	MaxRetries int
 }
 
@@ -37,7 +36,7 @@ func (hc *HttpClient) ForwardTo(req *http.Request, jsonResp interface{}) error {
 }
 
 func (hc *HttpClient) do(req *http.Request) (resp *http.Response, err error) {
-	if resp, err = hc.cli.Do(req); err == nil {
+	if resp, err = http.DefaultClient.Do(req); err == nil {
 		return
 	}
 
@@ -48,7 +47,7 @@ func (hc *HttpClient) do(req *http.Request) (resp *http.Response, err error) {
 		time.Sleep(backoff)
 		backoff *= 2
 
-		if resp, err = hc.cli.Do(req); err == nil {
+		if resp, err = http.DefaultClient.Do(req); err == nil {
 			break
 		}
 	}
