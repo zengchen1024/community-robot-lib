@@ -2,7 +2,9 @@ package kafka
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"regexp"
 	"sync"
 
 	"github.com/Shopify/sarama"
@@ -11,6 +13,8 @@ import (
 
 	"github.com/opensourceways/community-robot-lib/mq"
 )
+
+var reIpPort = regexp.MustCompile(`^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}:[1-9][0-9]*$`)
 
 type kfkMQ struct {
 	opts     mq.Options
@@ -220,4 +224,14 @@ func NewMQ(opts ...mq.Option) mq.MQ {
 	return &kfkMQ{
 		opts: options,
 	}
+}
+
+func ValidateConnectingAddress(addr []string) error {
+	for _, v := range addr {
+		if !reIpPort.MatchString(v) {
+			return errors.New("invalid connecting address")
+		}
+	}
+
+	return nil
 }
