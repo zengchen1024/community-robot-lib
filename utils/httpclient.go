@@ -21,26 +21,30 @@ func NewHttpClient(n int) HttpClient {
 	}
 }
 
-func (hc *HttpClient) ForwardTo(req *http.Request, jsonResp interface{}) error {
+func (hc *HttpClient) ForwardTo(req *http.Request, jsonResp interface{}) (statusCode int, err error) {
 	resp, err := hc.do(req)
 	if err != nil || resp == nil {
-		return err
+		return
 	}
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		rb, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
+	if code := resp.StatusCode; code < 200 || code > 299 {
+		statusCode = code
+
+		var rb []byte
+		if rb, err = ioutil.ReadAll(resp.Body); err == nil {
+			err = fmt.Errorf("response has status:%s and body:%q", resp.Status, rb)
 		}
-		return fmt.Errorf("response has status:%s and body:%q", resp.Status, rb)
+
+		return
 	}
 
 	if jsonResp != nil {
-		return json.NewDecoder(resp.Body).Decode(jsonResp)
+		err = json.NewDecoder(resp.Body).Decode(jsonResp)
 	}
-	return nil
+
+	return
 }
 
 func (hc *HttpClient) do(req *http.Request) (resp *http.Response, err error) {
