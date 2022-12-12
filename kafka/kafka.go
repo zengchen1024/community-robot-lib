@@ -168,7 +168,13 @@ func (kMQ *kfkMQ) Subscribe(topics string, h mq.Handler, opts ...mq.SubscribeOpt
 	}
 
 	s := newSubscriber(topics, c, g, gc)
-	s.start()
+
+	if err := s.start(); err != nil {
+		g.Close()
+		c.Close()
+
+		return nil, err
+	}
 
 	return s, nil
 }
@@ -193,7 +199,8 @@ func (kMQ *kfkMQ) clusterConfig() *sarama.Config {
 		cfg.Version = sarama.MaxVersion
 	}
 
-	cfg.Consumer.Return.Errors = true
+	// no need to handle error
+	// cfg.Consumer.Return.Errors = true
 	cfg.Consumer.Offsets.Initial = sarama.OffsetNewest
 
 	return cfg

@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -110,6 +111,8 @@ type subscriber struct {
 	ready chan struct{}
 	stop  chan struct{}
 	done  chan struct{}
+
+	cancel context.CancelFunc
 }
 
 func newSubscriber(
@@ -146,7 +149,7 @@ func (s *subscriber) Unsubscribe() error {
 	mErr := utils.MultiError{}
 
 	s.once.Do(func() {
-		close(s.stop)
+		s.cancel()
 
 		// wait
 		<-s.done
@@ -159,40 +162,43 @@ func (s *subscriber) Unsubscribe() error {
 	return mErr.Err()
 }
 
-func (s *subscriber) start() {
-	log := s.gc.kOpts.Log
-	ctx := s.gc.subOpts.Context
-	topic := []string{s.t}
-
-	go func() {
+func (s *subscriber) start() error {
+	f := func(ctx context.Context) {
 		defer close(s.done)
 
-		for {
-			select {
-			case err := <-s.cg.Errors():
-				if err != nil {
-					log.Errorf("consumer error: %v", err)
-				}
+		log := s.gc.kOpts.Log
+		topic := []string{s.t}
 
-			case <-s.stop:
-				log.Errorf("consumer stopped")
-				return
+		// doesn't support re-consuming because of server-side rebalance
+		if err := s.cg.Consume(ctx, topic, &s.gc); err != nil {
+			log.Errorf("Consume err: %s", err.Error())
+			close(s.stop)
 
-			default:
-				err := s.cg.Consume(ctx, topic, &s.gc)
-				switch err {
-				case nil:
-					continue
-				case sarama.ErrClosedConsumerGroup:
-					return
-				default:
-					log.Error(err)
-				}
-			}
+			return
 		}
-	}()
 
-	<-s.ready
+		if err := ctx.Err(); err != nil {
+			log.Infof("exit by unsubscribing, err:%s", err.Error())
+		} else {
+			log.Fatal("maybe, server-side rebalance happens. Restart to fix it!")
+		}
+	}
+
+	ctx, cancel := context.WithCancel(s.gc.subOpts.Context)
+
+	go f(ctx)
+
+	select {
+	case <-s.ready:
+		s.cancel = cancel
+
+		return nil
+
+	case <-s.stop:
+		cancel()
+
+		return fmt.Errorf("start failed")
+	}
 }
 
 func (s *subscriber) notifyReady() {
